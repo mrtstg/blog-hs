@@ -78,20 +78,26 @@ getPostR pathParts = do
     lst
       | length lst > postDepthLimit -> invalidArgs []
     _ -> do
-      let finalPath =
+      let filePath =
             foldr (flip combine . T.unpack) "./templates" (init pathParts) </>
             (T.unpack (last pathParts) ++ ".md")
-      fileExists <- liftIO (doesFileExist finalPath)
-      if not fileExists
+      let indexFilePath = foldr (flip combine . T.unpack) "./templates" pathParts </> "index.md"
+      fileExists <- liftIO (doesFileExist filePath)
+      indexFileExists <- liftIO (doesFileExist indexFilePath)
+      if not fileExists && not indexFileExists
         then notFound
         else do
-          mdRes <- liftIO $ getMarkdown redisConnectionPool finalPath
+          let filePath' =
+                if fileExists
+                  then filePath
+                  else indexFilePath
+          mdRes <- liftIO $ getMarkdown redisConnectionPool filePath'
           case mdRes of
             (Left _) -> notFound
             (Right (BString _)) -> error "Unreachable pattern!"
             (Right (MD md)) -> do
               defaultLayout $ do
-                setTitle $ toHtml finalPath
+                setTitle $ toHtml filePath'
                 [whamlet|
 <section .content>
   ^{markdownToWidget md}
