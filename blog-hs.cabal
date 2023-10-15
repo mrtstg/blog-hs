@@ -1,0 +1,109 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           blog-hs
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/mrtstg/blog-hs#readme>
+homepage:       https://github.com/mrtstg/blog-hs#readme
+bug-reports:    https://github.com/mrtstg/blog-hs/issues
+author:         Ilya Zamaratskikh
+maintainer:     mrtstgdev@gmail.com
+copyright:      2023 Ilya Zamaratskikh
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/mrtstg/blog-hs
+
+library
+  exposed-modules:
+      Env
+      Foundation
+      Handlers.Home
+      Handlers.Post
+      Parser
+      Parser.Block
+      Parser.Html
+      Parser.Inline
+      Parser.Types
+      Parser.Utils
+  other-modules:
+      Paths_blog_hs
+  autogen-modules:
+      Paths_blog_hs
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      MissingH ==1.6.0.1
+    , aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring ==0.11.5.2
+    , containers ==0.6.7
+    , directory ==1.3.7.1
+    , filepath ==1.4.2.2
+    , hedis ==0.15.2
+    , parsec ==3.1.16.1
+    , text ==2.0.2
+    , yesod-core
+  default-language: Haskell2010
+
+executable blog-hs
+  main-is: Main.hs
+  other-modules:
+      Paths_blog_hs
+  autogen-modules:
+      Paths_blog_hs
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      MissingH ==1.6.0.1
+    , aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , blog-hs
+    , bytestring ==0.11.5.2
+    , containers ==0.6.7
+    , directory ==1.3.7.1
+    , filepath ==1.4.2.2
+    , hedis ==0.15.2
+    , parsec ==3.1.16.1
+    , text ==2.0.2
+    , yesod-core
+  default-language: Haskell2010
+
+test-suite blog-hs-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_blog_hs
+  autogen-modules:
+      Paths_blog_hs
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      MissingH ==1.6.0.1
+    , aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , blog-hs
+    , bytestring ==0.11.5.2
+    , containers ==0.6.7
+    , directory ==1.3.7.1
+    , filepath ==1.4.2.2
+    , hedis ==0.15.2
+    , parsec ==3.1.16.1
+    , text ==2.0.2
+    , yesod-core
+  default-language: Haskell2010
