@@ -2,3 +2,6 @@
 .git
 templates
 *.aes
+deployment
+Makefile
+.gitignore
