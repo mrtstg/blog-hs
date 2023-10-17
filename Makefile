@@ -10,5 +10,11 @@ deploy-dev: $(DEV_COMPOSE_FILE)
 destroy-dev: $(DEV_COMPOSE_FILE)
 	$(BASE_COMPOSE_COMMAND) -f $(DEV_COMPOSE_FILE) down
 
+deploy-dev-app: $(DEV_COMPOSE_FILE)
+	$(BASE_COMPOSE_COMMAND) -f $(DEV_COMPOSE_FILE) --profile app up -d
+
+destroy-dev-app: $(DEV_COMPOSE_FILE)
+	$(BASE_COMPOSE_COMMAND) -f $(DEV_COMPOSE_FILE) --profile app down
+
 build-image: $(DOCKERFILE_PATH)
 	docker build -t $(DOCKER_IMAGE_NAME) -f $(DOCKERFILE_PATH) .

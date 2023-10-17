@@ -7,3 +7,16 @@ services:
     restart: unless-stopped
     ports:
       - 6379:6379
+  app:
+    profiles: ['app']
+    image: blog-hs:latest
+    container_name: blog-hs
+    hostname: blog
+    restart: unless-stopped
+    volumes:
+      - ../templates:/usr/src/app/templates
+    environment:
+      DEPTH_LEVEL: 5
+      REDIS_HOST: redis
+    ports:
+      - 3000:3000
