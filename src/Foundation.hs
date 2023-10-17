@@ -6,6 +6,7 @@
 
 module Foundation where
 
+import Control.Concurrent.Lock (Lock)
 import qualified Data.Map as Map
 import Database.Redis (Connection)
 import Yesod.Core
@@ -15,6 +16,7 @@ type TemplatesCacheMap = Map.Map String String
 data App = App
   { postDepthLimit :: Int
   , redisConnectionPool :: Connection
+  , redisWriteLock :: Lock
   }
 
 mkYesodData

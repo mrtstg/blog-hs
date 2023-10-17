@@ -9,6 +9,7 @@ module Main
   ( main
   ) where
 
+import qualified Control.Concurrent.Lock as Lock
 import Database.Redis (ConnectInfo(..), PortID(..), connect, defaultConnectInfo)
 import Env (getIntFromEnv, getStringFromEnv)
 import Foundation
@@ -26,4 +27,5 @@ main = do
   redisConnectionPool <-
     connect
       defaultConnectInfo {connectHost = redisHost, connectPort = PortNumber (read $ show redisPort)}
+  redisWriteLock <- Lock.new
   warp 3000 App {..}

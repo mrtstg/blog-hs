@@ -29,6 +29,7 @@ dependencies:
 - blaze-html
 - aeson
 - MissingH == 1.6.0.1
+- concurrent-extra == 0.7.0.12
 
 ghc-options:
 - -Wall

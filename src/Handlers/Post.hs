@@ -7,6 +7,8 @@ module Handlers.Post
   ( getPostR
   ) where
 
+import Control.Concurrent (threadDelay)
+import qualified Control.Concurrent.Lock as Lock
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Char8 as B
 import Data.ByteString.Lazy (fromStrict, toStrict)
@@ -35,32 +37,46 @@ readFileAndCache conn path = do
     (Right md) -> do
       let jsonString = JSON.encode md
       let jsonString' = toStrict jsonString
-      _ <- R.runRedis conn $ do R.set (B.pack $ md5s (Str path)) jsonString'
+      _ <-
+        R.runRedis conn $ do
+          R.setOpts (B.pack $ md5s (Str path)) jsonString' (R.SetOpts (Just 5) Nothing Nothing)
       return $ Right (BString jsonString')
 
-getFileAndParse :: R.Connection -> FilePath -> IO (Either String CachedMarkdown)
-getFileAndParse conn path = do
-  let packedPath = B.pack $ md5s (Str path)
-  v <- R.runRedis conn $ do R.get packedPath
-  case v of
-    (Left e) -> do
-      print e
-      readFileAndCache conn path
-    (Right res) ->
-      case res of
-        Nothing -> do
-          putStrLn "Didnt found cache!"
-          readFileAndCache conn path
-        (Just v') -> do
-          putStrLn "Used cached!"
-          let markdownBlocks = JSON.decode (fromStrict v')
-          case markdownBlocks of
-            (Just v'') -> return $ Right (MD v'')
-            Nothing -> return $ Left "Failed to decode JSON!"
+getFileAndParse :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String CachedMarkdown)
+getFileAndParse lock conn path =
+  let innerCache :: FilePath -> IO (Either String CachedMarkdown)
+      innerCache p' = do
+        locked' <- Lock.locked lock
+        if locked'
+          then do
+            _ <- threadDelay 50000
+            getFileAndParse lock conn p'
+          else do
+            Lock.acquire lock
+            res <- readFileAndCache conn p'
+            Lock.release lock
+            return res
+   in do let packedPath = B.pack $ md5s (Str path)
+         v <- R.runRedis conn $ do R.get packedPath
+         case v of
+           (Left e) -> do
+             print e
+             innerCache path
+           (Right res) ->
+             case res of
+               Nothing -> do
+                 putStrLn "Didnt found cache!"
+                 innerCache path
+               (Just v') -> do
+                 putStrLn "Used cached!"
+                 let markdownBlocks = JSON.decode (fromStrict v')
+                 case markdownBlocks of
+                   (Just v'') -> return $ Right (MD v'')
+                   Nothing -> return $ Left "Failed to decode JSON!"
 
-getMarkdown :: R.Connection -> FilePath -> IO (Either String CachedMarkdown)
-getMarkdown conn path = do
-  res <- getFileAndParse conn path
+getMarkdown :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String CachedMarkdown)
+getMarkdown lock conn path = do
+  res <- getFileAndParse lock conn path
   case res of
     e@(Left _) -> return e
     md@(Right (MD _)) -> return md
@@ -91,7 +107,7 @@ getPostR pathParts = do
                 if fileExists
                   then filePath
                   else indexFilePath
-          mdRes <- liftIO $ getMarkdown redisConnectionPool filePath'
+          mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool filePath'
           case mdRes of
             (Left _) -> notFound
             (Right (BString _)) -> error "Unreachable pattern!"
