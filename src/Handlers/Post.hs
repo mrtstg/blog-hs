@@ -39,7 +39,7 @@ readFileAndCache conn path = do
       let jsonString' = toStrict jsonString
       _ <-
         R.runRedis conn $ do
-          R.setOpts (B.pack $ md5s (Str path)) jsonString' (R.SetOpts (Just 5) Nothing Nothing)
+          R.setOpts (B.pack $ md5s (Str path)) jsonString' (R.SetOpts (Just 60) Nothing Nothing)
       return $ Right (BString jsonString')
 
 getFileAndParse :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String CachedMarkdown)
