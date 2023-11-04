@@ -7,14 +7,14 @@ module Parser.Utils
   , codeBlock
   ) where
 
-import Text.Parsec
-import Text.Parsec.String
+import Data.Attoparsec.Combinator (many1)
+import Data.Attoparsec.Text
 
 between' :: Parser a -> Parser b -> Parser c -> Parser [c]
 between' a b c = a *> manyTill c (try b)
 
 space' :: Parser String
-space' = many (char ' ')
+space' = choice [try $ many1 (char ' '), return ""]
 
 space'' :: Parser String
 space'' = many1 (char ' ')

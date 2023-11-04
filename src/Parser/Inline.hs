@@ -1,25 +1,33 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Parser.Inline
   ( parseMarkdownInlines
   , parseMarkdownInline
   ) where
 
+import Control.Applicative ((<|>))
+import Data.Attoparsec.Combinator (lookAhead, many1, manyTill)
+import Data.Attoparsec.Text
 import Data.Functor ((<&>))
 import Parser.Types
 import Parser.Utils
-import Text.Parsec
-import Text.Parsec.String
 
 parseMarkdownInlines :: Parser [MarkdownInline]
 parseMarkdownInlines = manyTill parseMarkdownInline endOfLine
 
 parseMarkdownInline :: Parser MarkdownInline
 parseMarkdownInline =
-  choice [try parseLink, try parseImage, try parseItalic, try parseBold, parseText]
+  choice [try parseLink, try parseImage, try parseBold, try parseItalic, parseText]
+
+textStopSyms :: Parser ()
+textStopSyms = do
+  _ <- choice [char '!', char '[', char '*', char '@']
+  return ()
 
 parseText :: Parser MarkdownInline
 parseText = do
   c <- anyChar
-  cs <- manyTill anyChar (lookAhead $ oneOf "![*@" <|> endOfLine)
+  cs <- manyTill anyChar $ lookAhead (textStopSyms <|> endOfLine)
   return $ Text (c : cs)
 
 parseLink :: Parser MarkdownInline
@@ -35,7 +43,7 @@ parseImage = do
   return $ Image alt href
 
 parseBold :: Parser MarkdownInline
-parseBold = between' asterisk' asterisk' parseMarkdownInline <&> Bold
+parseBold = between' asterisk'' asterisk'' parseMarkdownInline <&> Bold
 
 parseItalic :: Parser MarkdownInline
-parseItalic = between' asterisk'' asterisk'' parseMarkdownInline <&> Italic
+parseItalic = between' asterisk' asterisk' parseMarkdownInline <&> Italic

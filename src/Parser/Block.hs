@@ -2,16 +2,16 @@ module Parser.Block
   ( parseBlocks
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Monad (guard)
+import Data.Attoparsec.Text
 import Data.Functor ((<&>))
 import Parser.Inline
 import Parser.Types
 import Parser.Utils
-import Text.Parsec
-import Text.Parsec.String
 
 parseBlocks :: Parser [MarkdownBlock]
-parseBlocks = many parseBlock <* eof
+parseBlocks = manyTill parseBlock endOfInput
 
 parseBlock :: Parser MarkdownBlock
 parseBlock = choice [try parseHeader, try parseQuote, try parseList, try parseCode, parseParagraph]
@@ -21,10 +21,13 @@ parseOrderedList = many1 listItem <&> List OrderedList
   where
     listItem = ((many1 digit >> char '.') <* space') >> parseMarkdownInlines
 
+unorderedListSyms :: Parser Char
+unorderedListSyms = choice [char '-', char '+', char '*']
+
 parseUnorderedList :: Parser MarkdownBlock
 parseUnorderedList = many1 listItem <&> List UnorderedList
   where
-    listItem = (many1 (oneOf "-+*") <* space'') >> parseMarkdownInlines
+    listItem = (many1 unorderedListSyms <* space'') >> parseMarkdownInlines
 
 parseList :: Parser MarkdownBlock
 parseList = parseUnorderedList <|> parseOrderedList
