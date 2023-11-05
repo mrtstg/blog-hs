@@ -1,7 +1,13 @@
 module App.Types
   ( AppOpts(..)
+  , AppCommand(..)
   ) where
 
-newtype AppOpts = AppOpts
+data AppOpts = AppOpts
   { configPath :: Maybe FilePath
+  , appCommand :: AppCommand
   }
+
+data AppCommand
+  = RunServer
+  | CheckFiles
