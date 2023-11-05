@@ -1,10 +1,38 @@
 module App.Utils
   ( getAppConfig
+  , listFiles
+  , listDatalessFiles
   ) where
 
 import App.Config (AppConfig(..))
 import Data.Yaml (decodeFileEither)
 import Env (getIntFromEnv, getStringFromEnv)
+import System.Directory
+import System.FilePath (addExtension, combine, dropExtension, takeExtension)
+
+listDatalessFiles :: FilePath -> IO [FilePath]
+listDatalessFiles = listFiles f
+  where
+    f :: FilePath -> IO Bool
+    f p = do
+      if takeExtension p /= ".md"
+        then return False
+        else do
+          let nPath = addExtension (dropExtension p) ".yml"
+          v <- doesFileExist nPath
+          return $ not v
+
+listFiles :: (FilePath -> IO Bool) -> FilePath -> IO [FilePath]
+listFiles pred' path = do
+  isDir <- doesDirectoryExist path
+  if not isDir
+    then do
+      valid <- pred' path
+      return [path | valid]
+    else do
+      files <- listDirectory path
+      lst <- traverse (listFiles pred' . combine path) files
+      return $ concat lst
 
 getAppConfigFromEnv :: IO AppConfig
 getAppConfigFromEnv = do
