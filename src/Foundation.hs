@@ -26,4 +26,5 @@ mkYesodData
 /post/*Texts PostR GET
 |]
 
-instance Yesod App
+instance Yesod App where
+  makeSessionBackend _ = return Nothing
