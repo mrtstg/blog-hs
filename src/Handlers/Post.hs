@@ -92,7 +92,7 @@ getPostR pathParts = do
   case pathParts of
     [] -> notFound
     lst
-      | length lst > postDepthLimit -> invalidArgs []
+      | length lst > postDepthLimit -> permissionDenied "Post depth limit overflowed"
     _ -> do
       let filePath =
             foldr (flip combine . T.unpack) "./templates" (init pathParts) </>
