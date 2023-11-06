@@ -7,13 +7,16 @@ module Handlers.Post
   ( getPostR
   ) where
 
+import App.Utils (normaliseFilePath)
 import Control.Concurrent (threadDelay)
 import qualified Control.Concurrent.Lock as Lock
+import Crud (findPostByFilename)
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Char8 as B
 import Data.ByteString.Lazy (fromStrict, toStrict)
 import Data.Hash.MD5 (Str(..), md5s)
 import qualified Data.Text as T
+import qualified Database.Persist.Sqlite as SQL
 import qualified Database.Redis as R
 import Foundation
 import Parser (parseMarkdown)
@@ -107,14 +110,19 @@ getPostR pathParts = do
                 if fileExists
                   then filePath
                   else indexFilePath
+          let normalisedPath = normaliseFilePath filePath'
           mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool filePath'
-          case mdRes of
-            (Left _) -> notFound
-            (Right (BString _)) -> error "Unreachable pattern!"
-            (Right (MD md)) -> do
-              defaultLayout $ do
-                setTitle $ toHtml filePath'
-                [whamlet|
+          post <- liftIO $ findPostByFilename dbPath normalisedPath
+          case post of
+            Nothing -> notFound
+            (Just (SQL.Entity _ Post {postTitle = postTitle})) -> do
+              case mdRes of
+                (Left _) -> notFound
+                (Right (BString _)) -> error "Unreachable pattern!"
+                (Right (MD md)) -> do
+                  defaultLayout $ do
+                    setTitle $ toHtml postTitle
+                    [whamlet|
 <section .content>
   ^{markdownToWidget md}
 |]

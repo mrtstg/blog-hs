@@ -11,3 +11,4 @@ data AppOpts = AppOpts
 data AppCommand
   = RunServer
   | CheckFiles
+  | CreateDatabase

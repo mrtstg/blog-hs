@@ -27,8 +27,10 @@ library
       App.Commands
       App.Config
       App.Parser
+      App.PostInfo
       App.Types
       App.Utils
+      Crud
       Env
       Foundation
       Handlers.Home

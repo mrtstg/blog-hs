@@ -18,6 +18,9 @@ runServerParser = pure RunServer
 checkFilesParser :: Parser AppCommand
 checkFilesParser = pure CheckFiles
 
+createDatabaseParser :: Parser AppCommand
+createDatabaseParser = pure CreateDatabase
+
 appParser :: Parser AppOpts
 appParser =
   AppOpts <$>
@@ -29,4 +32,7 @@ appParser =
     (command "run" (info runServerParser (progDesc "Run server")) <>
      command
        "check"
-       (info checkFilesParser (progDesc "Check if meta files for markdown is existing")))
+       (info checkFilesParser (progDesc "Check if meta files for markdown is existing")) <>
+     command
+       "create-db"
+       (info createDatabaseParser (progDesc "Create database for blog pages info")))

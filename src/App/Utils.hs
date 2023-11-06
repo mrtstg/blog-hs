@@ -2,13 +2,65 @@ module App.Utils
   ( getAppConfig
   , listFiles
   , listDatalessFiles
+  , checkPostInfoFiles
+  , listPostInfoFiles
+  , parsePostInfoFiles
+  , normaliseFilePath
   ) where
 
 import App.Config (AppConfig(..))
-import Data.Yaml (decodeFileEither)
+import App.PostInfo (PostInfo(..), parsePostInfoFromFile)
+import Control.Monad (forM_)
+import Data.Yaml (ParseException, decodeFileEither)
 import Env (getIntFromEnv, getStringFromEnv)
 import System.Directory
-import System.FilePath (addExtension, combine, dropExtension, takeExtension)
+import System.FilePath
+  ( addExtension
+  , combine
+  , dropExtension
+  , isAbsolute
+  , joinPath
+  , normalise
+  , splitPath
+  , takeExtension
+  )
+
+normaliseFilePath :: FilePath -> FilePath
+normaliseFilePath p =
+  if isAbsolute p
+    then p
+    else do
+      (joinPath . drop 1 . splitPath . normalise) p
+
+parsePostInfoFiles :: FilePath -> IO (Either ParseException [(FilePath, PostInfo)])
+parsePostInfoFiles p = do
+  files <- listPostInfoFiles p
+  let files' = map (flip addExtension "md" . dropExtension) files
+  results <- mapM parsePostInfoFromFile files
+  case sequence results of
+    (Left e) -> return $ Left e
+    (Right r) -> return (Right $ zip files' r)
+
+checkPostInfoFiles :: FilePath -> IO (Maybe ())
+checkPostInfoFiles p = do
+  invalidFiles <- listDatalessFiles p
+  case invalidFiles of
+    [] -> return $ Just ()
+    lst -> do
+      putStrLn "Following files are without YML file:"
+      forM_ lst putStrLn
+      return Nothing
+
+listPostInfoFiles :: FilePath -> IO [FilePath]
+listPostInfoFiles p = do
+  files <- listMarkdownFiles p
+  return $ map (flip addExtension ".yml" . dropExtension) files
+
+listMarkdownFiles :: FilePath -> IO [FilePath]
+listMarkdownFiles = listFiles f
+  where
+    f :: FilePath -> IO Bool
+    f = return . (== ".md") . takeExtension
 
 listDatalessFiles :: FilePath -> IO [FilePath]
 listDatalessFiles = listFiles f
@@ -45,7 +97,7 @@ getAppConfigFromEnv = do
       { redisHost = redisHost'
       , redisPort = redisPort'
       , blogDepthLimit = postDepthLimit'
-      , dbPath = dbPath'
+      , App.Config.dbPath = dbPath'
       }
 
 getAppConfigFromFile :: FilePath -> IO (Either String AppConfig)
