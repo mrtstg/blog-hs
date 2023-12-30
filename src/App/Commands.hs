@@ -3,6 +3,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE TypeFamilies      #-}
+{-# LANGUAGE ViewPatterns      #-}
 
 module App.Commands
   ( runCommand
@@ -24,8 +25,9 @@ import           Database.Redis          (ConnectInfo (..), PortID (..),
 import           Foundation
 import           Handlers.Home           (getHomeR)
 import           Handlers.Post           (getPostR)
-import           System.Directory        (doesFileExist, removeFile)
+import           System.Directory        (copyFile, doesFileExist, removeFile)
 import           System.Exit             (ExitCode (..), exitWith)
+import           System.FilePath         (addExtension)
 import           Yesod.Core
 
 mkYesodDispatch "App" resourcesApp
@@ -49,8 +51,6 @@ runCheckFiles _ = do
 
 runCreateDatabase :: AppConfig -> IO ()
 runCreateDatabase (AppConfig {dbPath = dbPath}) = do
-  dbExists <- doesFileExist dbPath
-  when dbExists $ removeFile dbPath
   filesCheckRes <- checkPostInfoFiles "./templates"
   case filesCheckRes of
     Nothing -> exitWith (ExitFailure 3)
@@ -61,12 +61,15 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
           putStrLn $ "Parse error: " ++ show err
           exitWith (ExitFailure 2)
         (Right lst) -> do
-          runSqlite (pack dbPath) $ do
+          let tmpDBPath = addExtension dbPath "tmp"
+          runSqlite (pack $ tmpDBPath) $ do
             runMigration dbMigration
             postIds <-
               insertMany $
               map (\(f, l) -> Post (normaliseFilePath f) (l & name) (l & description)) lst
             liftIO $ putStrLn $ "Created " ++ show (length postIds) ++ " posts!"
+          copyFile tmpDBPath dbPath
+          removeFile tmpDBPath
 
 runCommand :: AppCommand -> AppConfig -> IO ()
 runCommand cmd cfg =
