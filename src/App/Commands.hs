@@ -1,31 +1,32 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 module App.Commands
   ( runCommand
   ) where
 
-import App.Config
-import App.PostInfo (PostInfo(..))
-import App.Types
-import App.Utils (checkPostInfoFiles, listDatalessFiles, normaliseFilePath, parsePostInfoFiles)
+import           App.Config
+import           App.PostInfo            (PostInfo (..))
+import           App.Types
+import           App.Utils               (checkPostInfoFiles, listDatalessFiles,
+                                          normaliseFilePath, parsePostInfoFiles)
 import qualified Control.Concurrent.Lock as Lock
-import Control.Monad (forM_, when)
-import Data.Function ((&))
-import Data.Text (pack)
-import Database.Persist
-import Database.Persist.Sqlite
-import Database.Redis (ConnectInfo(..), PortID(..), connect, defaultConnectInfo)
-import Foundation
-import Handlers.Home (getHomeR)
-import Handlers.Post (getPostR)
-import System.Directory (doesFileExist, removeFile)
-import System.Exit (ExitCode(..), exitWith)
-import Yesod.Core
+import           Control.Monad           (forM_, when)
+import           Data.Function           ((&))
+import           Data.Text               (pack)
+import           Database.Persist
+import           Database.Persist.Sqlite
+import           Database.Redis          (ConnectInfo (..), PortID (..),
+                                          connect, defaultConnectInfo)
+import           Foundation
+import           Handlers.Home           (getHomeR)
+import           Handlers.Post           (getPostR)
+import           System.Directory        (doesFileExist, removeFile)
+import           System.Exit             (ExitCode (..), exitWith)
+import           Yesod.Core
 
 mkYesodDispatch "App" resourcesApp
 
@@ -44,7 +45,7 @@ runCheckFiles _ = do
   res <- checkPostInfoFiles "./templates"
   case res of
     (Just _) -> putStrLn "Everything is ok!"
-    Nothing -> exitWith (ExitFailure 3)
+    Nothing  -> exitWith (ExitFailure 3)
 
 runCreateDatabase :: AppConfig -> IO ()
 runCreateDatabase (AppConfig {dbPath = dbPath}) = do
@@ -70,6 +71,6 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
 runCommand :: AppCommand -> AppConfig -> IO ()
 runCommand cmd cfg =
   case cmd of
-    RunServer -> runServerCommand cfg
-    CheckFiles -> runCheckFiles cfg
+    RunServer      -> runServerCommand cfg
+    CheckFiles     -> runCheckFiles cfg
     CreateDatabase -> runCreateDatabase cfg

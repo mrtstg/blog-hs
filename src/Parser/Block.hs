@@ -2,13 +2,13 @@ module Parser.Block
   ( parseBlocks
   ) where
 
-import Control.Applicative ((<|>))
-import Control.Monad (guard)
-import Data.Attoparsec.Text
-import Data.Functor ((<&>))
-import Parser.Inline
-import Parser.Types
-import Parser.Utils
+import           Control.Applicative  ((<|>))
+import           Control.Monad        (guard)
+import           Data.Attoparsec.Text
+import           Data.Functor         ((<&>))
+import           Parser.Inline
+import           Parser.Types
+import           Parser.Utils
 
 parseBlocks :: Parser [MarkdownBlock]
 parseBlocks = manyTill parseBlock endOfInput

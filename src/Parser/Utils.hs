@@ -7,8 +7,8 @@ module Parser.Utils
   , codeBlock
   ) where
 
-import Data.Attoparsec.Combinator (many1)
-import Data.Attoparsec.Text
+import           Data.Attoparsec.Combinator (many1)
+import           Data.Attoparsec.Text
 
 between' :: Parser a -> Parser b -> Parser c -> Parser [c]
 between' a b c = a *> manyTill c (try b)

@@ -5,12 +5,12 @@ module Parser.Inline
   , parseMarkdownInline
   ) where
 
-import Control.Applicative ((<|>))
-import Data.Attoparsec.Combinator (lookAhead, many1, manyTill)
-import Data.Attoparsec.Text
-import Data.Functor ((<&>))
-import Parser.Types
-import Parser.Utils
+import           Control.Applicative        ((<|>))
+import           Data.Attoparsec.Combinator (lookAhead, many1, manyTill)
+import           Data.Attoparsec.Text
+import           Data.Functor               ((<&>))
+import           Parser.Types
+import           Parser.Utils
 
 parseMarkdownInlines :: Parser [MarkdownInline]
 parseMarkdownInlines = manyTill parseMarkdownInline endOfLine

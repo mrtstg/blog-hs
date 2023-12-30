@@ -8,22 +8,15 @@ module App.Utils
   , normaliseFilePath
   ) where
 
-import App.Config (AppConfig(..))
-import App.PostInfo (PostInfo(..), parsePostInfoFromFile)
-import Control.Monad (forM_)
-import Data.Yaml (ParseException, decodeFileEither)
-import Env (getIntFromEnv, getStringFromEnv)
-import System.Directory
-import System.FilePath
-  ( addExtension
-  , combine
-  , dropExtension
-  , isAbsolute
-  , joinPath
-  , normalise
-  , splitPath
-  , takeExtension
-  )
+import           App.Config       (AppConfig (..))
+import           App.PostInfo     (PostInfo (..), parsePostInfoFromFile)
+import           Control.Monad    (forM_)
+import           Data.Yaml        (ParseException, decodeFileEither)
+import           Env              (getIntFromEnv, getStringFromEnv)
+import           System.Directory
+import           System.FilePath  (addExtension, combine, dropExtension,
+                                   isAbsolute, joinPath, normalise, splitPath,
+                                   takeExtension)
 
 normaliseFilePath :: FilePath -> FilePath
 normaliseFilePath p =
@@ -38,7 +31,7 @@ parsePostInfoFiles p = do
   let files' = map (flip addExtension "md" . dropExtension) files
   results <- mapM parsePostInfoFromFile files
   case sequence results of
-    (Left e) -> return $ Left e
+    (Left e)  -> return $ Left e
     (Right r) -> return (Right $ zip files' r)
 
 checkPostInfoFiles :: FilePath -> IO (Maybe ())
@@ -105,7 +98,7 @@ getAppConfigFromFile p = do
   res' <- decodeFileEither p
   return $
     case res' of
-      (Left e) -> Left $ show e
+      (Left e)  -> Left $ show e
       (Right r) -> Right r
 
 getAppConfig :: Maybe FilePath -> IO (Either String AppConfig)

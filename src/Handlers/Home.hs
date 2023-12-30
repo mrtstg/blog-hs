@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 module Handlers.Home
   ( getHomeR
   ) where
 
-import Foundation
-import Yesod.Core
+import           Foundation
+import           Yesod.Core
 
 getHomeR :: Handler Html
 getHomeR =

@@ -5,11 +5,11 @@ module App.PostInfo
   , parsePostInfoFromFile
   ) where
 
-import Data.Yaml
-import GHC.Generics
+import           Data.Yaml
+import           GHC.Generics
 
 data PostInfo = PostInfo
-  { name :: String
+  { name        :: String
   , description :: String
   } deriving (Generic, Show)
 

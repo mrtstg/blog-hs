@@ -4,9 +4,9 @@ module Parser.Html
   ( markdownToWidget
   ) where
 
-import Data.Maybe (isJust)
-import Parser.Types
-import Yesod.Core
+import           Data.Maybe   (isJust)
+import           Parser.Types
+import           Yesod.Core
 
 markdownToWidget :: [MarkdownBlock] -> WidgetFor site ()
 markdownToWidget blocks = [whamlet|^{mconcat $ map blockToWidget blocks}|]
@@ -44,7 +44,7 @@ blockToWidget (Code lang code) =
     unwrappedLang =
       case lang of
         (Just v) -> v
-        Nothing -> ""
+        Nothing  -> ""
 
 markdownInlinesToString :: [MarkdownInline] -> WidgetFor site ()
 markdownInlinesToString = mconcat . map markdownInlineToString

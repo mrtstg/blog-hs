@@ -2,17 +2,17 @@ module Main
   ( main
   ) where
 
-import App.Commands
-import App.Config (AppConfig(..))
-import App.Config
-import App.Parser (appParser)
-import App.Types (AppCommand(..))
-import App.Types
-import App.Utils
-import Data.Function ((&))
-import Foundation
-import Options.Applicative
-import System.Exit
+import           App.Commands
+import           App.Config
+import           App.Config          (AppConfig (..))
+import           App.Parser          (appParser)
+import           App.Types
+import           App.Types           (AppCommand (..))
+import           App.Utils
+import           Data.Function       ((&))
+import           Foundation
+import           Options.Applicative
+import           System.Exit
 
 main :: IO ()
 main = do

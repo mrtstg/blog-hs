@@ -1,31 +1,31 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TypeFamilies      #-}
 
 module Handlers.Post
   ( getPostR
   ) where
 
-import App.Utils (normaliseFilePath)
-import Control.Concurrent (threadDelay)
+import           App.Utils               (normaliseFilePath)
+import           Control.Concurrent      (threadDelay)
 import qualified Control.Concurrent.Lock as Lock
-import Crud (findPostByFilename)
-import qualified Data.Aeson as JSON
-import qualified Data.ByteString.Char8 as B
-import Data.ByteString.Lazy (fromStrict, toStrict)
-import Data.Hash.MD5 (Str(..), md5s)
-import qualified Data.Text as T
+import           Crud                    (findPostByFilename)
+import qualified Data.Aeson              as JSON
+import qualified Data.ByteString.Char8   as B
+import           Data.ByteString.Lazy    (fromStrict, toStrict)
+import           Data.Hash.MD5           (Str (..), md5s)
+import qualified Data.Text               as T
 import qualified Database.Persist.Sqlite as SQL
-import qualified Database.Redis as R
-import Foundation
-import Parser (parseMarkdown)
-import Parser.Html (markdownToWidget)
-import Parser.Types (MarkdownBlock)
-import System.Directory (doesFileExist)
-import System.FilePath
-import System.IO (readFile')
-import Yesod.Core
+import qualified Database.Redis          as R
+import           Foundation
+import           Parser                  (parseMarkdown)
+import           Parser.Html             (markdownToWidget)
+import           Parser.Types            (MarkdownBlock)
+import           System.Directory        (doesFileExist)
+import           System.FilePath
+import           System.IO               (readFile')
+import           Yesod.Core
 
 data CachedMarkdown
   = BString B.ByteString
@@ -75,7 +75,7 @@ getFileAndParse lock conn path =
                  let markdownBlocks = JSON.decode (fromStrict v')
                  case markdownBlocks of
                    (Just v'') -> return $ Right (MD v'')
-                   Nothing -> return $ Left "Failed to decode JSON!"
+                   Nothing    -> return $ Left "Failed to decode JSON!"
 
 getMarkdown :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String CachedMarkdown)
 getMarkdown lock conn path = do
@@ -87,7 +87,7 @@ getMarkdown lock conn path = do
       let markdownBlocks = JSON.decode (fromStrict bs)
       case markdownBlocks of
         (Just v) -> return $ Right (MD v)
-        Nothing -> return $ Left "Failed to decode JSON!"
+        Nothing  -> return $ Left "Failed to decode JSON!"
 
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do

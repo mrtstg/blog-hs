@@ -12,8 +12,8 @@ module Parser.Types
   , ListType(..)
   ) where
 
-import Data.Aeson (FromJSON, ToJSON)
-import GHC.Generics
+import           Data.Aeson   (FromJSON, ToJSON)
+import           GHC.Generics
 
 type LinkName = String
 

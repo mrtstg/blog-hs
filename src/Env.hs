@@ -4,8 +4,8 @@ module Env
   , getStringFromEnv
   ) where
 
-import System.Environment (lookupEnv)
-import Text.Read (readMaybe)
+import           System.Environment (lookupEnv)
+import           Text.Read          (readMaybe)
 
 type DefaultInt = Int
 
@@ -30,12 +30,12 @@ getIntFromEnv varName defaultValue = do
   res <- tryIntFromEnv varName
   return $
     case res of
-      Nothing -> defaultValue
+      Nothing  -> defaultValue
       (Just v) -> v
 
 getStringFromEnv :: EnvVarName -> DefaultString -> IO String
 getStringFromEnv varName defaultValue = do
   v <- lookupEnv varName
   case v of
-    Nothing -> return defaultValue
+    Nothing   -> return defaultValue
     (Just v') -> return v'

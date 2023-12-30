@@ -1,35 +1,34 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE EmptyDataDecls #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GADTs                      #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE UndecidableInstances       #-}
 
 module Foundation where
 
-import Control.Concurrent.Lock (Lock)
-import Data.Text (Text)
-import Database.Persist
-import Database.Persist.Sqlite
-import Database.Persist.TH
-import Database.Redis (Connection)
-import Yesod.Core
+import           Control.Concurrent.Lock (Lock)
+import           Data.Text               (Text)
+import           Database.Persist
+import           Database.Persist.Sqlite
+import           Database.Persist.TH
+import           Database.Redis          (Connection)
+import           Yesod.Core
 
 data App = App
-  { postDepthLimit :: Int
+  { postDepthLimit      :: Int
   , redisConnectionPool :: Connection
-  , redisWriteLock :: Lock
-  , dbPath :: Text
+  , redisWriteLock      :: Lock
+  , dbPath              :: Text
   }
 
 mkYesodData
