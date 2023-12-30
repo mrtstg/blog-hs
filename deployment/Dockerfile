@@ -1,7 +1,7 @@
 FROM haskell:9.6.3-buster AS builder
-RUN stack setup --install-ghc
 WORKDIR /usr/src/app
-COPY blog-hs.cabal stack.yaml package.yaml stack.yaml.lock ./
+COPY blog-hs.cabal package.yaml stack.yaml stack.yaml.lock ./
+RUN stack setup --install-ghc
 RUN stack install --only-dependencies
 COPY . .
 RUN stack install
@@ -13,4 +13,4 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 WORKDIR /usr/src/app
 COPY --from=builder /root/.local/bin/blog-hs .
-CMD /usr/src/app/blog-hs
+CMD /usr/src/app/blog-hs run
