@@ -71,7 +71,6 @@ getMarkdownFileAndParse lock conn path =
          case v of
            Nothing -> innerCache path
            (Just v') -> do
-             putStrLn "Used cached!"
              let markdownBlocks = JSON.decode (fromStrict v')
              case markdownBlocks of
                (Just v'') -> return $ Right (MD v'')
@@ -94,7 +93,6 @@ getPostInfoFileAndParse lock conn path = let
           case v of
             Nothing   -> innerCache path
             (Just v') -> do
-                putStrLn "Using cached info!"
                 let postInfo = JSON.decode (fromStrict v')
                 case postInfo of
                   (Just v'') -> return $ Right (PInfo v'')
