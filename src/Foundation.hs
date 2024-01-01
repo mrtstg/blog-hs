@@ -19,17 +19,16 @@ module Foundation where
 
 import           Control.Concurrent.Lock (Lock)
 import           Data.Text               (Text)
-import           Database.Persist
 import           Database.Persist.Sqlite
 import           Database.Persist.TH
 import           Database.Redis          (Connection)
 import           Yesod.Core
 
 data App = App
-  { postDepthLimit      :: Int
-  , redisConnectionPool :: Connection
-  , redisWriteLock      :: Lock
-  , dbPath              :: Text
+  { postDepthLimit      :: !Int
+  , redisConnectionPool :: !Connection
+  , redisWriteLock      :: !Lock
+  , dbPath              :: !Text
   }
 
 mkYesodData

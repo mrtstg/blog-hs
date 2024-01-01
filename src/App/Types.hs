@@ -4,8 +4,8 @@ module App.Types
   ) where
 
 data AppOpts = AppOpts
-  { configPath :: Maybe FilePath
-  , appCommand :: AppCommand
+  { configPath :: !(Maybe FilePath)
+  , appCommand :: !AppCommand
   }
 
 data AppCommand
