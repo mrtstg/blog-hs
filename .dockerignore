@@ -5,3 +5,4 @@ templates
 deployment
 Makefile
 .gitignore
+db.db
