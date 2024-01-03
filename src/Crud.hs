@@ -4,7 +4,8 @@
 {-# LANGUAGE TypeFamilies          #-}
 
 module Crud
-  ( findPostByFilename
+  ( findPostByFilename,
+  selectLatestPosts
   ) where
 
 import           Data.Text               (Text)
@@ -19,3 +20,11 @@ findPostByFilename dbPath fPath =
     case posts of
       []    -> return Nothing
       (p:_) -> return $ Just p
+
+selectLatestPosts :: Text -> Int -> IO [Entity Post]
+selectLatestPosts dbPath pageNumber = runSqlite dbPath $ do selectList [] [Desc PostDate, OffsetBy (10 * max 0 (pageNumber - 1)), LimitTo 10]
+
+isPostsAvailable :: Text -> Int -> IO Bool
+isPostsAvailable dbPath pageNumber = runSqlite dbPath $ do
+    postsCount <- count ([] :: [Filter Post])
+    if postsCount - (10 * max 1 pageNumber) > 0 then return True else return False

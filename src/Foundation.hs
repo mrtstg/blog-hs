@@ -19,6 +19,7 @@ module Foundation where
 
 import           Control.Concurrent.Lock (Lock)
 import           Data.Text               (Text)
+import           Data.Time.Calendar      (Day)
 import           Database.Persist.Sqlite
 import           Database.Persist.TH
 import           Database.Redis          (Connection)
@@ -45,6 +46,7 @@ Post
   file String
   title String
   descriptinon String
+  date Day
   UniquePostFile file
   deriving Show
 |]

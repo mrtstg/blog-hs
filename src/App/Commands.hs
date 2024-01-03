@@ -15,7 +15,6 @@ import           App.Types
 import           App.Utils               (checkPostInfoFiles, listDatalessFiles,
                                           normaliseFilePath, parsePostInfoFiles)
 import qualified Control.Concurrent.Lock as Lock
-import           Control.Monad           (forM_, when)
 import           Data.Function           ((&))
 import           Data.Text               (pack)
 import           Database.Persist
@@ -66,7 +65,7 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
             runMigration dbMigration
             postIds <-
               insertMany $
-              map (\(f, l) -> Post (normaliseFilePath f) (l & name) (l & description)) lst
+              map (\(f, l) -> Post (normaliseFilePath f) (l & name) (l & description) (l & date)) lst
             liftIO $ putStrLn $ "Created " ++ show (length postIds) ++ " posts!"
           copyFile tmpDBPath dbPath
           removeFile tmpDBPath
