@@ -53,3 +53,9 @@ Post
 
 instance Yesod App where
   makeSessionBackend _ = return Nothing
+  errorHandler NotFound = fmap toTypedContent $ defaultLayout $ do
+      setTitle "Not found!"
+      toWidget [hamlet|
+<h1> Page is not found
+|]
+  errorHandler other    = defaultErrorHandler other
