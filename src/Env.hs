@@ -2,6 +2,7 @@ module Env
   ( tryIntFromEnv
   , getIntFromEnv
   , getStringFromEnv
+  , getBoolFromEnv
   ) where
 
 import           System.Environment (lookupEnv)
@@ -12,6 +13,8 @@ type DefaultInt = Int
 type EnvVarName = String
 
 type DefaultString = String
+
+type DefaultBoolean = Bool
 
 tryIntFromEnv :: EnvVarName -> IO (Maybe Int)
 tryIntFromEnv varName = do
@@ -39,3 +42,10 @@ getStringFromEnv varName defaultValue = do
   case v of
     Nothing   -> return defaultValue
     (Just v') -> return v'
+
+getBoolFromEnv :: EnvVarName -> DefaultBoolean -> IO Bool
+getBoolFromEnv varName defaultValue = do
+    v <- lookupEnv varName
+    case v of
+      Nothing   -> return defaultValue
+      (Just v') -> return (v' == "1")
