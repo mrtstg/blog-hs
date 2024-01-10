@@ -52,6 +52,6 @@ markdownInlinesToString = mconcat . map markdownInlineToString
 markdownInlineToString :: MarkdownInline -> WidgetFor site ()
 markdownInlineToString (AbsoluteLink name href) = [whamlet|<a href=#{href}>#{name}</a>|]
 markdownInlineToString (Text text) = [whamlet|#{text}|]
-markdownInlineToString (Image name href) = [whamlet|<img src=#{href} alt="#{name}">|]
+markdownInlineToString (Image name href) = [whamlet|<img loading=lazy src=#{href} alt="#{name}">|]
 markdownInlineToString (Italic texts) = [whamlet|<i>^{markdownInlinesToString texts}</i>|]
 markdownInlineToString (Bold texts) = [whamlet|<b>^{markdownInlinesToString texts}</b>|]
