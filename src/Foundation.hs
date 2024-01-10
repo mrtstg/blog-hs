@@ -30,6 +30,7 @@ data App = App
   , redisConnectionPool :: !Connection
   , redisWriteLock      :: !Lock
   , dbPath              :: !Text
+  , enableIndexPage     :: !Bool
   }
 
 mkYesodData

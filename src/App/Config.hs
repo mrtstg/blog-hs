@@ -8,10 +8,11 @@ import           Data.Yaml
 import           GHC.Generics
 
 data AppConfig = AppConfig
-  { redisHost      :: !String
-  , redisPort      :: !Int
-  , dbPath         :: !String
-  , blogDepthLimit :: !Int
+  { redisHost       :: !String
+  , redisPort       :: !Int
+  , dbPath          :: !String
+  , blogDepthLimit  :: !Int
+  , enableIndexPage :: !Bool
   } deriving (Generic, Show)
 
 instance FromJSON AppConfig

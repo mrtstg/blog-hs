@@ -25,13 +25,14 @@ getPageValue param = case param of
 getHomeR :: Handler Html
 getHomeR = do
   App { .. } <- getYesod
-  pageParam <- lookupGetParam "page"
-  let pageValue = getPageValue pageParam
-  posts <- liftIO $ selectLatestPosts dbPath pageValue
-  postsAvailable <- liftIO $ isPostsAvailable dbPath pageValue
-  defaultLayout $ do
-    setTitle "Latest posts"
-    [whamlet|
+  if not enableIndexPage then notFound else do
+    pageParam <- lookupGetParam "page"
+    let pageValue = getPageValue pageParam
+    posts <- liftIO $ selectLatestPosts dbPath pageValue
+    postsAvailable <- liftIO $ isPostsAvailable dbPath pageValue
+    defaultLayout $ do
+        setTitle "Latest posts"
+        [whamlet|
 $if Prelude.null posts
     <h1> No posts!
 $else
