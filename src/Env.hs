@@ -3,6 +3,7 @@ module Env
   , getIntFromEnv
   , getStringFromEnv
   , getBoolFromEnv
+  , getOptStringFromEnv
   ) where
 
 import           System.Environment (lookupEnv)
@@ -42,6 +43,9 @@ getStringFromEnv varName defaultValue = do
   case v of
     Nothing   -> return defaultValue
     (Just v') -> return v'
+
+getOptStringFromEnv :: EnvVarName -> IO (Maybe String)
+getOptStringFromEnv = lookupEnv
 
 getBoolFromEnv :: EnvVarName -> DefaultBoolean -> IO Bool
 getBoolFromEnv varName defaultValue = do
