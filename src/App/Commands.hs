@@ -32,7 +32,7 @@ import           Yesod.Core
 mkYesodDispatch "App" resourcesApp
 
 runServerCommand :: AppConfig -> IO ()
-runServerCommand (AppConfig redisHost redisPort dbPath' blogDepthLimit enableIndexPage) = do
+runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPort, dbPath = dbPath', blogDepthLimit = blogDepthLimit}) = do
   let postDepthLimit = blogDepthLimit
   redisConnectionPool <-
     connect

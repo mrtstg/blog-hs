@@ -13,6 +13,8 @@ data AppConfig = AppConfig
   , dbPath          :: !String
   , blogDepthLimit  :: !Int
   , enableIndexPage :: !Bool
+  , siteName        :: !(Maybe String)
+  , siteHost        :: !(Maybe String)
   } deriving (Generic, Show)
 
 instance FromJSON AppConfig

@@ -13,7 +13,7 @@ import           App.PostInfo     (PostInfo (..), parsePostInfoFromFile)
 import           Control.Monad    (forM_)
 import           Data.Yaml        (ParseException, decodeFileEither)
 import           Env              (getBoolFromEnv, getIntFromEnv,
-                                   getStringFromEnv)
+                                   getOptStringFromEnv, getStringFromEnv)
 import           System.Directory
 import           System.FilePath  (addExtension, combine, dropExtension,
                                    isAbsolute, joinPath, normalise, splitPath,
@@ -87,6 +87,8 @@ getAppConfigFromEnv = do
   redisPort' <- getIntFromEnv "REDIS_PORT" 6379
   dbPath' <- getStringFromEnv "DB_PATH" "./blog.db"
   enableIndex <- getBoolFromEnv "ENABLE_INDEX" True
+  siteName <- getOptStringFromEnv "SITE_NAME"
+  siteHost <- getOptStringFromEnv "SITE_HOST"
   return $
     AppConfig
       { redisHost = redisHost'
@@ -94,6 +96,8 @@ getAppConfigFromEnv = do
       , blogDepthLimit = postDepthLimit'
       , App.Config.dbPath = dbPath'
       , enableIndexPage = enableIndex
+      , siteName = siteName
+      , siteHost = siteHost
       }
 
 getAppConfigFromFile :: FilePath -> IO (Either String AppConfig)
