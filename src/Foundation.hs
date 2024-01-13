@@ -8,6 +8,7 @@
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
@@ -17,6 +18,7 @@
 
 module Foundation where
 
+import           App.Config              (AppConfig (..))
 import           Control.Concurrent.Lock (Lock)
 import           Data.Text               (Text)
 import           Data.Time.Calendar      (Day)
@@ -30,7 +32,7 @@ data App = App
   , redisConnectionPool :: !Connection
   , redisWriteLock      :: !Lock
   , dbPath              :: !Text
-  , enableIndexPage     :: !Bool
+  , config              :: !AppConfig
   }
 
 mkYesodData
@@ -54,6 +56,22 @@ Post
 
 instance Yesod App where
   makeSessionBackend _ = return Nothing
+  defaultLayout widget = do
+    App { .. } <- getYesod
+    let siteName' = siteName config
+    pc <- widgetToPageContent widget
+    withUrlRenderer [hamlet|
+$doctype 5
+<html prefix="og: http://ogp.me/ns#">
+  <head>
+    <title> #{pageTitle pc}
+    <meta charset=utf-8>
+    $maybe siteName'' <- siteName'
+        <meta property=og:site_name content="#{siteName''}">
+    ^{pageHead pc}
+  <body>
+    ^{pageBody pc}
+|]
   errorHandler NotFound = fmap toTypedContent $ defaultLayout $ do
       setTitle "Not found!"
       toWidget [hamlet|

@@ -7,7 +7,9 @@ module Handlers.Home
   ( getHomeR
   ) where
 
+import           App.Config       (enableIndexPage)
 import           Crud             (isPostsAvailable, selectLatestPosts)
+import           Data.Function    ((&))
 import           Data.Text
 import           Database.Persist (Entity (..))
 import           Foundation
@@ -25,7 +27,7 @@ getPageValue param = case param of
 getHomeR :: Handler Html
 getHomeR = do
   App { .. } <- getYesod
-  if not enableIndexPage then notFound else do
+  if not (config & enableIndexPage) then notFound else do
     pageParam <- lookupGetParam "page"
     let pageValue = getPageValue pageParam
     posts <- liftIO $ selectLatestPosts dbPath pageValue
