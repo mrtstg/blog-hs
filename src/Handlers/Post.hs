@@ -7,6 +7,7 @@ module Handlers.Post
   ( getPostR
   ) where
 
+import           App.Config              (siteHost)
 import           App.PostInfo            (PostInfo (..), parsePostInfoFromFile)
 import           App.Redis               (cacheRedisDataMD5,
                                           getCachedRedisDataMD5)
@@ -122,6 +123,13 @@ getPostInfo lock conn path = do
             (Just v) -> return $ Right (PInfo v)
             Nothing  -> return $ Left "Failed to decode JSON!"
 
+processPath :: [T.Text] -> String
+processPath = helper "" where
+    helper :: String -> [T.Text] -> String
+    helper acc []        = acc
+    helper acc ["index"] = acc
+    helper acc (l:ll)    = helper (acc ++ T.unpack l ++ "/") ll
+
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do
   App {..} <- getYesod
@@ -146,9 +154,17 @@ getPostR pathParts = do
           mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool filePath'
           let metaPath' = flip addExtension "yml" $ dropExtensions filePath'
           postInfoRes <- liftIO $ getPostInfo redisWriteLock redisConnectionPool metaPath'
+          let siteHost' = siteHost config
           case (mdRes, postInfoRes) of
-            (Right (MD md), Right (PInfo PostInfo { name = postName })) -> do
+            (Right (MD md), Right (PInfo PostInfo { name = postName, description = postDescription })) -> do
               defaultLayout $ do
+                toWidgetHead [hamlet|
+<meta property=og:title content=#{postName}>
+<meta property=og:type content=article>
+<meta property=og:description content=#{postDescription}>
+$maybe siteHost'' <- siteHost'
+    <meta property=og:url content=#{siteHost''}/post/#{processPath pathParts}>
+|]
                 setTitle $ toHtml postName
                 [whamlet|
 <section .content>
