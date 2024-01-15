@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module App.Utils
   ( getAppConfig
   , listFiles
@@ -6,11 +7,13 @@ module App.Utils
   , listPostInfoFiles
   , parsePostInfoFiles
   , normaliseFilePath
+  , processPostPathParts
   ) where
 
 import           App.Config       (AppConfig (..))
 import           App.PostInfo     (PostInfo (..), parsePostInfoFromFile)
 import           Control.Monad    (forM_)
+import qualified Data.Text        as T
 import           Data.Yaml        (ParseException, decodeFileEither)
 import           Env              (getBoolFromEnv, getIntFromEnv,
                                    getOptStringFromEnv, getStringFromEnv)
@@ -18,6 +21,13 @@ import           System.Directory
 import           System.FilePath  (addExtension, combine, dropExtension,
                                    isAbsolute, joinPath, normalise, splitPath,
                                    takeExtension)
+
+processPostPathParts :: [T.Text] -> String
+processPostPathParts = helper "" where
+    helper :: String -> [T.Text] -> String
+    helper acc []        = acc
+    helper acc ["index"] = acc
+    helper acc (l:ll)    = helper (acc ++ T.unpack l ++ "/") ll
 
 normaliseFilePath :: FilePath -> FilePath
 normaliseFilePath p =
