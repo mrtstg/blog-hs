@@ -3,14 +3,10 @@ module Main
   ) where
 
 import           App.Commands
-import           App.Config
-import           App.Config          (AppConfig (..))
 import           App.Parser          (appParser)
 import           App.Types
-import           App.Types           (AppCommand (..))
 import           App.Utils
 import           Data.Function       ((&))
-import           Foundation
 import           Options.Applicative
 import           System.Exit
 
