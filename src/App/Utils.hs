@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 module App.Utils
   ( getAppConfig
   , listFiles
@@ -97,23 +98,15 @@ listFiles pred' path = do
 
 getAppConfigFromEnv :: IO AppConfig
 getAppConfigFromEnv = do
-  postDepthLimit' <- getIntFromEnv "DEPTH_LEVEL" 1
-  redisHost' <- getStringFromEnv "REDIS_HOST" "localhost"
-  redisPort' <- getIntFromEnv "REDIS_PORT" 6379
-  dbPath' <- getStringFromEnv "DB_PATH" "./blog.db"
-  enableIndex <- getBoolFromEnv "ENABLE_INDEX" True
+  blogDepthLimit <- getIntFromEnv "DEPTH_LEVEL" 1
+  redisHost <- getStringFromEnv "REDIS_HOST" "localhost"
+  redisPort <- getIntFromEnv "REDIS_PORT" 6379
+  dbPath <- getStringFromEnv "DB_PATH" "./blog.db"
+  enableIndexPage <- getBoolFromEnv "ENABLE_INDEX" True
   siteName <- getOptStringFromEnv "SITE_NAME"
   siteHost <- getOptStringFromEnv "SITE_HOST"
-  return $
-    AppConfig
-      { redisHost = redisHost'
-      , redisPort = redisPort'
-      , blogDepthLimit = postDepthLimit'
-      , App.Config.dbPath = dbPath'
-      , enableIndexPage = enableIndex
-      , siteName = siteName
-      , siteHost = siteHost
-      }
+  robotsFilePath <- getOptStringFromEnv "ROBOTS_TXT_PATH"
+  return $ AppConfig { .. }
 
 getAppConfigFromFile :: FilePath -> IO (Either String AppConfig)
 getAppConfigFromFile p = do

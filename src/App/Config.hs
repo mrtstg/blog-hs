@@ -15,6 +15,7 @@ data AppConfig = AppConfig
   , enableIndexPage :: !Bool
   , siteName        :: !(Maybe String)
   , siteHost        :: !(Maybe String)
+  , robotsFilePath  :: !(Maybe String)
   } deriving (Generic, Show)
 
 instance FromJSON AppConfig

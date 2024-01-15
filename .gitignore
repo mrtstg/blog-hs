@@ -7,3 +7,5 @@ templates/
 .env
 config.yaml
 *.db*
+*.txt
+!robots.txt

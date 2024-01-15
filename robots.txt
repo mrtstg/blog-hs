@@ -1,0 +1,8 @@
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: *
+Allow: /post/
+Allow: /
+
+Sitemap: http://localhost:3000/sitemap.xml
