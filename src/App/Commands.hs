@@ -24,6 +24,8 @@ import           Database.Redis          (ConnectInfo (..), PortID (..),
 import           Foundation
 import           Handlers.Home           (getHomeR)
 import           Handlers.Post           (getPostR)
+import           Handlers.Robots         (getRobotsR)
+import           Handlers.Sitemap        (getSitemapR)
 import           System.Directory        (copyFile, doesFileExist, removeFile)
 import           System.Exit             (ExitCode (..), exitWith)
 import           System.FilePath         (addExtension)

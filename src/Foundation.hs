@@ -40,6 +40,8 @@ mkYesodData
   [parseRoutes|
 / HomeR GET
 /post/*Texts PostR GET
+/sitemap.xml SitemapR GET
+/robots.txt RobotsR GET
 |]
 
 share
