@@ -105,6 +105,7 @@ test-suite blog-hs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      App.UtilsSpec
       Paths_blog_hs
   autogen-modules:
       Paths_blog_hs
@@ -124,6 +125,8 @@ test-suite blog-hs-test
     , directory ==1.3.7.1
     , filepath ==1.4.2.2
     , hedis ==0.15.2
+    , hspec >=2.0.0
+    , hspec-discover
     , optparse-applicative ==0.17.1.0
     , persistent ==2.14.*
     , persistent-sqlite ==2.13.*

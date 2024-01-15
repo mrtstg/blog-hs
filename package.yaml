@@ -70,3 +70,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - blog-hs
+    - hspec >= 2.0.0
+    - hspec-discover
