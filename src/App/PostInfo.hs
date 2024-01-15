@@ -14,6 +14,7 @@ data PostInfo = PostInfo
   { name        :: !String
   , description :: !String
   , date        :: !Day
+  , images      :: !(Maybe [String])
   } deriving (Generic, Show, Eq)
 
 parsePostInfoFromFile :: FilePath -> IO (Either ParseException PostInfo)

@@ -7,15 +7,17 @@ module Handlers.Post
   ( getPostR
   ) where
 
-import           App.Config              (siteHost)
+import           App.Config              (siteHost, siteName)
 import           App.PostInfo            (PostInfo (..), parsePostInfoFromFile)
 import           App.Redis               (cacheRedisDataMD5,
                                           getCachedRedisDataMD5)
+import           App.Utils               (processPostPathParts)
 import           Control.Concurrent      (threadDelay)
 import qualified Control.Concurrent.Lock as Lock
 import qualified Data.Aeson              as JSON
 import qualified Data.ByteString.Char8   as B
 import           Data.ByteString.Lazy    (fromStrict, toStrict)
+import qualified Data.List               as L
 import qualified Data.Text               as T
 import qualified Database.Redis          as R
 import           Foundation
@@ -25,6 +27,7 @@ import           Parser.Types            (MarkdownBlock)
 import           System.Directory        (doesFileExist)
 import           System.FilePath
 import           System.IO               (readFile')
+import           Text.Blaze.Html         (preEscapedToHtml)
 import           Yesod.Core
 
 data CachedMarkdown
@@ -123,13 +126,6 @@ getPostInfo lock conn path = do
             (Just v) -> return $ Right (PInfo v)
             Nothing  -> return $ Left "Failed to decode JSON!"
 
-processPath :: [T.Text] -> String
-processPath = helper "" where
-    helper :: String -> [T.Text] -> String
-    helper acc []        = acc
-    helper acc ["index"] = acc
-    helper acc (l:ll)    = helper (acc ++ T.unpack l ++ "/") ll
-
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do
   App {..} <- getYesod
@@ -155,15 +151,45 @@ getPostR pathParts = do
           let metaPath' = flip addExtension "yml" $ dropExtensions filePath'
           postInfoRes <- liftIO $ getPostInfo redisWriteLock redisConnectionPool metaPath'
           let siteHost' = siteHost config
+          let siteName' = siteName config
           case (mdRes, postInfoRes) of
-            (Right (MD md), Right (PInfo PostInfo { name = postName, description = postDescription })) -> do
+            (Right (MD md), Right (PInfo PostInfo { name = postName, description = postDescription, date = postDate, images = postImages })) -> do
               defaultLayout $ do
                 toWidgetHead [hamlet|
 <meta property=og:title content=#{postName}>
 <meta property=og:type content=article>
 <meta property=og:description content=#{postDescription}>
+$maybe postImages' <- postImages
+    $if not $ null postImages'
+        <meta property=og:image content=#{head postImages'}>
+
 $maybe siteHost'' <- siteHost'
-    <meta property=og:url content=#{siteHost''}/post/#{processPath pathParts}>
+    <meta property=og:url content=#{siteHost''}/post/#{processPostPathParts pathParts}>
+    <script type=application/ld+json>
+        {
+            "@context": "https://schema.org",
+            "@id": "#{siteHost''}/post/#{processPostPathParts pathParts}",
+            "@type": "Blog",
+            $maybe siteName'' <- siteName'
+                "name": "#{siteName''}",
+            "blogPost": {
+                "@id": "#{siteHost''}/post/#{processPostPathParts pathParts}#BlogPosting",
+                "@type": "BlogPosting",
+                "name": "#{postName}",
+                "headline": "#{postName}",
+                "url": "#{siteHost''}/post/#{processPostPathParts pathParts}",
+                "datePublished": "#{show postDate}T00:00:00",
+                $maybe postImages' <- postImages
+                    $if null postImages'
+                        "image": [],
+                    $else
+                        "image": ["#{preEscapedToHtml $ L.intercalate "\", \"" postImages'}"],
+                "author": {
+                    "@type": "Person",
+                    "name": "#TODO"
+                }
+            }
+        }
 |]
                 setTitle $ toHtml postName
                 [whamlet|
