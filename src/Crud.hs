@@ -6,7 +6,8 @@
 module Crud
   ( findPostByFilename,
   selectLatestPosts,
-  isPostsAvailable
+  isPostsAvailable,
+  selectAllPosts
   ) where
 
 import           Data.Text               (Text)
@@ -27,6 +28,9 @@ findPostByFilename dbPath fPath =
 
 selectLatestPosts :: Text -> Int -> IO [Entity Post]
 selectLatestPosts dbPath pageNumber = runSqlite dbPath $ do selectList [] [Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo 10]
+
+selectAllPosts :: Text -> IO [Entity Post]
+selectAllPosts dbPath = runSqlite dbPath $ do selectList [] []
 
 isPostsAvailable :: Text -> Int -> IO Bool
 isPostsAvailable dbPath pageNumber = runSqlite dbPath $ do

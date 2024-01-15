@@ -8,6 +8,7 @@ module App.Utils
   , parsePostInfoFiles
   , normaliseFilePath
   , processPostPathParts
+  , generatePostUrlFromRelativeFile
   ) where
 
 import           App.Config       (AppConfig (..))
@@ -19,8 +20,12 @@ import           Env              (getBoolFromEnv, getIntFromEnv,
                                    getOptStringFromEnv, getStringFromEnv)
 import           System.Directory
 import           System.FilePath  (addExtension, combine, dropExtension,
-                                   isAbsolute, joinPath, normalise, splitPath,
+                                   dropTrailingPathSeparator, isAbsolute,
+                                   joinPath, normalise, splitPath,
                                    takeExtension)
+
+generatePostUrlFromRelativeFile :: String -> FilePath -> String
+generatePostUrlFromRelativeFile baseHost filePath = baseHost <> "/post/" <> processPostPathParts (map (T.pack . dropTrailingPathSeparator) (splitPath . dropExtension $ filePath))
 
 processPostPathParts :: [T.Text] -> String
 processPostPathParts = helper "" where
