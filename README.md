@@ -34,8 +34,8 @@ of files and folders will be URL of page. Each post consists of two files:
 - Markdown file, which includes page content
 - YML file, which inclues information about post like title, image, description etc.
 
-    For example, post `https://YOURSITE.HERE/post/haskell/how-to-start-yesod` will be stored in files 
-    `./templates/haskell/how-to-start-yesod.md` and `./templates/haskell/how-to-start-yesod.yml`.
+For example, post `https://YOURSITE.HERE/post/haskell/how-to-start-yesod` will be stored in files 
+`./templates/haskell/how-to-start-yesod.md` and `./templates/haskell/how-to-start-yesod.yml`.
 
 Parsing of markdown file written in [Attoparsec](https://hackage.haskell.org/package/attoparsec) in [`Parser` module](src/Parser/)
 and theoretically can be extended. Now, its implemented basic elements of Markdown like headers, lists, code blocks, quotes,
@@ -101,6 +101,8 @@ This method by default suggests that you will configure server using environment
 if its nececcary.
 
 If you want only to build image, use `make build-image` command.
+
+:exclamation: **Dont forget to correct robots.txt file! It's not getting generated automatically.**
 
 # License
 
