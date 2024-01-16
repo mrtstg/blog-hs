@@ -26,22 +26,22 @@ import           Handlers.Home           (getHomeR)
 import           Handlers.Post           (getPostR)
 import           Handlers.Robots         (getRobotsR)
 import           Handlers.Sitemap        (getSitemapR)
-import           System.Directory        (copyFile, doesFileExist, removeFile)
+import           System.Directory        (copyFile, removeFile)
 import           System.Exit             (ExitCode (..), exitWith)
 import           System.FilePath         (addExtension)
 import           Yesod.Core
 
 mkYesodDispatch "App" resourcesApp
 
-runServerCommand :: AppConfig -> IO ()
-runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPort, dbPath = dbPath', blogDepthLimit = blogDepthLimit}) = do
+runServerCommand :: AppConfig -> Int -> IO ()
+runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPort, dbPath = dbPath', blogDepthLimit = blogDepthLimit}) port = do
   let postDepthLimit = blogDepthLimit
   redisConnectionPool <-
     connect
       defaultConnectInfo {connectHost = redisHost, connectPort = PortNumber (read $ show redisPort)}
   redisWriteLock <- Lock.new
   let dbPath = pack dbPath'
-  warp 3000 App {..}
+  warp port App {..}
 
 runCheckFiles :: AppConfig -> IO ()
 runCheckFiles _ = do
@@ -72,9 +72,9 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
           copyFile tmpDBPath dbPath
           removeFile tmpDBPath
 
-runCommand :: AppCommand -> AppConfig -> IO ()
-runCommand cmd cfg =
+runCommand :: AppCommand -> AppConfig -> AppOpts -> IO ()
+runCommand cmd cfg AppOpts { serverPort = port } =
   case cmd of
-    RunServer      -> runServerCommand cfg
+    RunServer      -> runServerCommand cfg port
     CheckFiles     -> runCheckFiles cfg
     CreateDatabase -> runCreateDatabase cfg

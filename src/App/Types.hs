@@ -5,6 +5,7 @@ module App.Types
 
 data AppOpts = AppOpts
   { configPath :: !(Maybe FilePath)
+  , serverPort :: !Int
   , appCommand :: !AppCommand
   }
 

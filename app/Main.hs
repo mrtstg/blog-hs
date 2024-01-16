@@ -19,4 +19,4 @@ main = do
     (Left err) -> do
       print err
       exitWith (ExitFailure 2)
-    (Right cfg) -> runCommand (opts & appCommand) cfg
+    (Right cfg) -> runCommand (opts & appCommand) cfg opts
