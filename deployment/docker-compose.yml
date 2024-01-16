@@ -1,14 +1,21 @@
 version: '3'
 services:
   redis:
+    profiles: ['dev', 'dev-app']
     image: redis:7.2.1-alpine
     container_name: redis-dev
     hostname: redis
     restart: unless-stopped
     ports:
       - 6379:6379
-  app:
+  redis-prod:
     profiles: ['app']
+    image: redis:7.2.1-alpine
+    container_name: blog-hs-redis
+    hostname: redis
+    restart: unless-stopped
+  app:
+    profiles: ['app', 'dev-app']
     image: blog-hs:latest
     container_name: blog-hs
     hostname: blog
