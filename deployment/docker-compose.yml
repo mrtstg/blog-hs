@@ -23,9 +23,12 @@ services:
     volumes:
       - ../templates:/usr/src/app/templates
       - ../db.db:/usr/src/app/db.db
+      - ../robots.txt:/usr/src/app/robots.txt
     environment:
       DEPTH_LEVEL: 5
       REDIS_HOST: redis
       DB_PATH: db.db
+      SITE_HOST: "http://localhost:3000"
+      ROBOTS_TXT_PATH: "./robots.txt"
     ports:
       - 3000:3000
