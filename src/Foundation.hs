@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
@@ -54,7 +55,13 @@ Post
   date Day
   UniquePostFile file
   deriving Show
+PostPhoto
+  url String
+  post PostId
+  UniquePostPhoto post url
+  deriving Show
 |]
+
 
 instance Yesod App where
   makeSessionBackend _ = return Nothing

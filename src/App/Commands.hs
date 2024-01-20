@@ -15,6 +15,7 @@ import           App.Types
 import           App.Utils               (checkPostInfoFiles, listDatalessFiles,
                                           normaliseFilePath, parsePostInfoFiles)
 import qualified Control.Concurrent.Lock as Lock
+import           Crud                    (initiatePosts)
 import           Data.Function           ((&))
 import           Data.Text               (pack)
 import           Database.Persist
@@ -63,12 +64,9 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
           exitWith (ExitFailure 2)
         (Right lst) -> do
           let tmpDBPath = addExtension dbPath "tmp"
-          runSqlite (pack $ tmpDBPath) $ do
-            runMigration dbMigration
-            postIds <-
-              insertMany $
-              map (\(f, l) -> Post (normaliseFilePath f) (l & name) (l & description) (l & date)) lst
-            liftIO $ putStrLn $ "Created " ++ show (length postIds) ++ " posts!"
+          runSqlite (pack tmpDBPath) $ runMigration dbMigration
+          posts <- initiatePosts (pack tmpDBPath) lst
+          putStrLn $ "Created " ++ show posts ++ " posts!"
           copyFile tmpDBPath dbPath
           removeFile tmpDBPath
 
