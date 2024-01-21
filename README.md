@@ -10,7 +10,7 @@
 A lightweight blog platform, written in Haskell using [Yesod](https://www.yesodweb.com/). 
 Using [Redis](https://redis.io/) for caching data and sqlite for providing sorted data.
 
-**This branch does not includes any CSS for web pages. If you're looking for already designed site, check `main-bulma` branch.**
+You're on `main-bulma` branch. It contains some ready styles for you're blog!
 
 # Features
 - Fully SSR! :rocket:
