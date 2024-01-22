@@ -21,7 +21,7 @@ module Foundation where
 
 import           App.Config              (AppConfig (..))
 import           Control.Concurrent.Lock (Lock)
-import           Data.Text               (Text)
+import           Data.Text               (Text, pack)
 import           Data.Time.Calendar      (Day)
 import           Database.Persist.Sqlite
 import           Database.Persist.TH
@@ -100,7 +100,8 @@ $doctype 5
             <h1 .title> Not found!
             <p .subtitle> This page does not exists or not available!
 |]
-  errorHandler _ = do
+  errorHandler e = do
+      $logError (pack $ show e)
       fmap toTypedContent $ defaultLayout $ do
         setTitle "Error!"
         toWidget [hamlet|
