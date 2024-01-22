@@ -193,7 +193,8 @@ $maybe siteHost'' <- siteHost'
 |]
                 setTitle $ toHtml postName
                 [whamlet|
-<section .content>
-  ^{markdownToWidget md}
+<div .container>
+    <div .content.p-5>
+        ^{markdownToWidget md}
 |]
             (_, _) -> notFound

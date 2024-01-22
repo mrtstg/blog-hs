@@ -75,15 +75,38 @@ $doctype 5
   <head>
     <title> #{pageTitle pc}
     <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css>
     $maybe siteName'' <- siteName'
         <meta property=og:site_name content="#{siteName''}">
     ^{pageHead pc}
   <body>
-    ^{pageBody pc}
+    <div .is-flex.is-flex-direction-column style="height:100vh;">
+        <nav .navbar.is-primary.p-3 role=navigation>
+            <a .navbar-item.has-background-primary href=/>
+                <p .title.is-3> Your blog name here
+        <section #content .is-flex-grow-1>
+            ^{pageBody pc}
+        <footer .footer>
+            <div .content.has-text-centered>
+                <p><b> Your name </b>, 2023
 |]
   errorHandler NotFound = fmap toTypedContent $ defaultLayout $ do
       setTitle "Not found!"
       toWidget [hamlet|
-<h1> Page is not found
+<section .hero.is-primary.is-fullheight>
+    <div .hero-body>
+        <div>
+            <h1 .title> Not found!
+            <p .subtitle> This page does not exists or not available!
 |]
-  errorHandler other    = defaultErrorHandler other
+  errorHandler _ = do
+      fmap toTypedContent $ defaultLayout $ do
+        setTitle "Error!"
+        toWidget [hamlet|
+<section .hero.is-primary.is-fullheight>
+    <div .hero-body>
+        <div>
+            <h1 .tutle> Error!
+            <p .subtitle> Something went wrong. Try later, please!
+|]
