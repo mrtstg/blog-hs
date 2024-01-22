@@ -32,3 +32,8 @@ services:
       ROBOTS_TXT_PATH: "./robots.txt"
     ports:
       - 3000:3000
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
+        max-file: 5
