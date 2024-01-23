@@ -36,32 +36,32 @@ blockToWidget (Paragraph lst) = [whamlet|<p> ^{markdownInlinesToString lst}|]
 blockToWidget (Parser.Types.Header 1 lst) = do
     let headerId = generateHeaderIdFromContent lst
     [whamlet|
-<h1 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+<h1 id="^{headerId}"> ^{paragraphLink headerId} ^{markdownInlinesToString lst}
 |]
 blockToWidget (Parser.Types.Header 2 lst) = do
     let headerId = generateHeaderIdFromContent lst
     [whamlet|
-<h2 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+<h2 id="^{headerId}"> ^{paragraphLink headerId} ^{markdownInlinesToString lst}
 |]
 blockToWidget (Parser.Types.Header 3 lst) = do
     let headerId = generateHeaderIdFromContent lst
     [whamlet|
-<h3 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+<h3 id="^{headerId}"> ^{paragraphLink headerId} ^{markdownInlinesToString lst}
 |]
 blockToWidget (Parser.Types.Header 4 lst) = do
     let headerId = generateHeaderIdFromContent lst
     [whamlet|
-<h4 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+<h4 id="^{headerId}"> ^{paragraphLink headerId} ^{markdownInlinesToString lst}
 |]
 blockToWidget (Parser.Types.Header 5 lst) = do
     let headerId = generateHeaderIdFromContent lst
     [whamlet|
-<h5 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+<h5 id="^{headerId}"> ^{paragraphLink headerId} ^{markdownInlinesToString lst}
 |]
 blockToWidget (Parser.Types.Header 6 lst) = do
     let headerId = generateHeaderIdFromContent lst
     [whamlet|
-<h6 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+<h6 id="^{headerId}"> ^{paragraphLink headerId} ^{markdownInlinesToString lst}
 |]
 blockToWidget (Parser.Types.Header _ _) = error "Unacceptable header value!"
 blockToWidget (Quote lst) = [whamlet|<blockquote> ^{markdownInlinesToString lst}|]
