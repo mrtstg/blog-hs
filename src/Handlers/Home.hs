@@ -35,16 +35,26 @@ getHomeR = do
     defaultLayout $ do
         setTitle "Latest posts"
         [whamlet|
-$if Prelude.null posts
-    <h1> No posts!
-$else
-    <ul>
+<div .container.is-centered.p-5>
+    $if Prelude.null posts
+        <h2 .title.is-2> No posts on this page!
+        <a href="/?page=#{pageValue - 1}"><button class="button is-large"> Previous page
+    $else
+        <h2 .title.is-2> Latest posts
         $forall post <- posts
             $case post
                 $of Entity _ post'
-                    <li><a href="/post/#{(dropExtensions . postFile) post'}">#{postTitle post'}
-$if pageValue /= 1
-    <a href="/?page=#{pageValue - 1}">Previous page
-$if postsAvailable
-    <a href="/?page=#{pageValue + 1}">Next page
+                    <div .box.m-3>
+                        <a href="/post/#{(dropExtensions . postFile) post'}">
+                            <h3 .title.is-3> #{postTitle post'}
+                        <p .subtitle.is-5> #{show $ postDate post'}
+                        <div .content>
+                            <p> #{postDescriptinon post'}
+        <div .buttons.are-large.is-fullwidth.is-centered.p-5>
+            $if pageValue /= 1
+                <a href="/?page=#{pageValue - 1}">
+                    <button .button>Previous page
+            $if postsAvailable
+                <a href="/?page=#{pageValue + 1}">
+                    <button .button>Next page
 |]

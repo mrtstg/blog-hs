@@ -82,9 +82,9 @@ $doctype 5
     ^{pageHead pc}
   <body>
     <div .is-flex.is-flex-direction-column style="height:100vh;">
-        <nav .navbar.is-primary.p-3 role=navigation>
-            <a .navbar-item.has-background-primary href=/>
-                <p .title.is-3> Your blog name here
+        <nav .navbar.is-primary role=navigation>
+            <a .navbar-item href=/>
+                <p .title.is-3.has-background-primary> Your blog name here
         <section #content .is-flex-grow-1>
             ^{pageBody pc}
         <footer .footer>
