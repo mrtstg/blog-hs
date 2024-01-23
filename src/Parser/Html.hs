@@ -4,21 +4,65 @@ module Parser.Html
   ( markdownToWidget
   ) where
 
-import           Data.Maybe   (isJust)
+import           Data.ByteString.Char8  (pack, unpack)
+import           Data.Char              (toLower)
+import           Data.List              (intercalate)
+import           Data.Maybe             (isJust)
+import           Network.HTTP.Types.URI (urlEncode)
+import           Parser.Inline          (markdownInlinesToPlainText)
 import           Parser.Types
+import           Text.Blaze.Html        (preEscapedToHtml)
 import           Yesod.Core
+
+generateHeaderIdFromContent :: [MarkdownInline] -> Html
+generateHeaderIdFromContent = preEscapedToHtml .
+    unpack .
+    urlEncode False .
+    pack .
+    intercalate "-" .
+    words .
+    map toLower .
+    filter (not . (`elem` ",.?!-:;\"'")) .
+    markdownInlinesToPlainText
 
 markdownToWidget :: [MarkdownBlock] -> WidgetFor site ()
 markdownToWidget blocks = [whamlet|^{mconcat $ map blockToWidget blocks}|]
 
+paragraphLink :: Html -> WidgetFor site ()
+paragraphLink id' = [whamlet|<a href=##{id'}> ¶|]
+
 blockToWidget :: MarkdownBlock -> WidgetFor site ()
 blockToWidget (Paragraph lst) = [whamlet|<p> ^{markdownInlinesToString lst}|]
-blockToWidget (Parser.Types.Header 1 lst) = [whamlet|<h1> ^{markdownInlinesToString lst}|]
-blockToWidget (Parser.Types.Header 2 lst) = [whamlet|<h2> ^{markdownInlinesToString lst}|]
-blockToWidget (Parser.Types.Header 3 lst) = [whamlet|<h3> ^{markdownInlinesToString lst}|]
-blockToWidget (Parser.Types.Header 4 lst) = [whamlet|<h4> ^{markdownInlinesToString lst}|]
-blockToWidget (Parser.Types.Header 5 lst) = [whamlet|<h5> ^{markdownInlinesToString lst}|]
-blockToWidget (Parser.Types.Header 6 lst) = [whamlet|<h6> ^{markdownInlinesToString lst}|]
+blockToWidget (Parser.Types.Header 1 lst) = do
+    let headerId = generateHeaderIdFromContent lst
+    [whamlet|
+<h1 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+|]
+blockToWidget (Parser.Types.Header 2 lst) = do
+    let headerId = generateHeaderIdFromContent lst
+    [whamlet|
+<h2 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+|]
+blockToWidget (Parser.Types.Header 3 lst) = do
+    let headerId = generateHeaderIdFromContent lst
+    [whamlet|
+<h3 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+|]
+blockToWidget (Parser.Types.Header 4 lst) = do
+    let headerId = generateHeaderIdFromContent lst
+    [whamlet|
+<h4 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+|]
+blockToWidget (Parser.Types.Header 5 lst) = do
+    let headerId = generateHeaderIdFromContent lst
+    [whamlet|
+<h5 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+|]
+blockToWidget (Parser.Types.Header 6 lst) = do
+    let headerId = generateHeaderIdFromContent lst
+    [whamlet|
+<h6 id="^{headerId}"> ^{markdownInlinesToString lst} ^{paragraphLink headerId}
+|]
 blockToWidget (Parser.Types.Header _ _) = error "Unacceptable header value!"
 blockToWidget (Quote lst) = [whamlet|<blockquote> ^{markdownInlinesToString lst}|]
 blockToWidget (List OrderedList lst) =

@@ -3,6 +3,7 @@
 module Parser.Inline
   ( parseMarkdownInlines
   , parseMarkdownInline
+  , markdownInlinesToPlainText
   ) where
 
 import           Control.Applicative        ((<|>))
@@ -11,6 +12,16 @@ import           Data.Attoparsec.Text
 import           Data.Functor               ((<&>))
 import           Parser.Types
 import           Parser.Utils
+
+markdownInlinesToPlainText :: [MarkdownInline] -> String
+markdownInlinesToPlainText = concatMap markdownInlineToPlainText
+
+markdownInlineToPlainText :: MarkdownInline -> String
+markdownInlineToPlainText (AbsoluteLink n _) = n
+markdownInlineToPlainText (Image n _) = n
+markdownInlineToPlainText (Text t) = t
+markdownInlineToPlainText (Italic inlines) = markdownInlinesToPlainText inlines
+markdownInlineToPlainText (Bold inlines) = markdownInlinesToPlainText inlines
 
 parseMarkdownInlines :: Parser [MarkdownInline]
 parseMarkdownInlines = manyTill parseMarkdownInline endOfLine
