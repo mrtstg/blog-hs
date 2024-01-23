@@ -14,14 +14,21 @@ Using [Redis](https://redis.io/) for caching data and sqlite for providing sorte
 
 # Features
 - Fully SSR! :rocket:
-- Posts stored in MD files
+- Posts stored in MD and YAML files
 - Sitemap.xml autogeneration
 - Internal Redis caching
+- Headers ID autogeneration
 - [OpenGraph](https://ogp.me) and [JSON-LD](https://json-ld.org/) generation for pages
+
+# TODO
+
+- [ ] Generation of table of contents
+- [ ] Option to disable header's id autogeneration
 
 # Table of contents
 
 - [How it works](#how-it-works)
+- [Feature details](#feature-details)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Deploy](#deploy)
@@ -45,6 +52,23 @@ Result of parsing both files is stored in Redis for one minute. This timing can 
 
 Also, blog-hs stores data about posts in SQLite database, which is used for showing latest posts on index page and [generating
 sitemap.xml](src/Handlers/Sitemap.hs) file. Database is creating manually using `create-db` command and stores data from YML files.
+
+# Feature details
+
+## Headers automatic ID generation
+
+Currently it is not available for configuration. Each header gets id from its content - images transformed into its alternative
+text, text format is ignored. All text is converting into lowercase and gets joined using dash. Punctuation marks is ignored.
+
+Next to each header will be paragraph symbol, which allows to go to this header.
+
+All details specified in [`Parser/Inline.hs`](src/Parser/Inline.hs) and [`Parser/Html.hs`](src/Parser/Html.hs) modules.
+
+```html
+# This header will be transformed into this HTML code:
+
+<h1 id="this-header-will-be-transformed-into-this-html-code"> This header will be transformed into HTML code: </h1>
+```
 
 # Usage
 
