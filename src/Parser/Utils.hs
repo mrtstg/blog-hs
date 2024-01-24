@@ -5,10 +5,50 @@ module Parser.Utils
   , asterisk'
   , asterisk''
   , codeBlock
+  , transliterateCharacter
   ) where
 
 import           Data.Attoparsec.Combinator (many1)
 import           Data.Attoparsec.Text
+import           Data.Char                  (isLetter)
+
+transliterateCharacter :: Char -> String
+transliterateCharacter 'а' = "a"
+transliterateCharacter 'б' = "b"
+transliterateCharacter 'в' = "v"
+transliterateCharacter 'г' = "g"
+transliterateCharacter 'д' = "d"
+transliterateCharacter 'е' = "e"
+transliterateCharacter 'ё' = "e"
+transliterateCharacter 'ж' = "zh"
+transliterateCharacter 'з' = "z"
+transliterateCharacter 'и' = "i"
+transliterateCharacter 'й' = "i"
+transliterateCharacter 'к' = "k"
+transliterateCharacter 'л' = "l"
+transliterateCharacter 'м' = "m"
+transliterateCharacter 'н' = "n"
+transliterateCharacter 'о' = "o"
+transliterateCharacter 'п' = "p"
+transliterateCharacter 'р' = "r"
+transliterateCharacter 'с' = "s"
+transliterateCharacter 'т' = "t"
+transliterateCharacter 'у' = "y"
+transliterateCharacter 'ф' = "f"
+transliterateCharacter 'х' = "h"
+transliterateCharacter 'ц' = "c"
+transliterateCharacter 'ч' = "ch"
+transliterateCharacter 'ш' = "sh"
+transliterateCharacter 'щ' = "sch"
+transliterateCharacter 'ъ' = ""
+transliterateCharacter 'ы' = "i"
+transliterateCharacter 'ь' = ""
+transliterateCharacter 'э' = "e"
+transliterateCharacter 'ю' = "yu"
+transliterateCharacter 'я' = "ya"
+transliterateCharacter ' '   = " "
+transliterateCharacter s | isLetter s = [s]
+                         | otherwise = []
 
 between' :: Parser a -> Parser b -> Parser c -> Parser [c]
 between' a b c = a *> manyTill c (try b)

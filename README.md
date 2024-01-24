@@ -70,6 +70,9 @@ All details specified in [`Parser/Inline.hs`](src/Parser/Inline.hs) and [`Parser
 <h1 id="this-header-will-be-transformed-into-this-html-code"> This header will be transformed into HTML code: </h1>
 ```
 
+Some symbols (like russian alphabet by default) gets translated into english symbols. **All symbols
+except this by default will be ignored**. For correcting this behavior see [`transliterateCharacter`](src/Parser/Utils.hs) function.
+
 # Usage
 
 ## Flags
