@@ -11,6 +11,7 @@ import           Data.Maybe             (isJust)
 import           Network.HTTP.Types.URI (urlEncode)
 import           Parser.Inline          (markdownInlinesToPlainText)
 import           Parser.Types
+import           Parser.Utils           (transliterateCharacter)
 import           Text.Blaze.Html        (preEscapedToHtml)
 import           Yesod.Core
 
@@ -21,8 +22,7 @@ generateHeaderIdFromContent = preEscapedToHtml .
     pack .
     intercalate "-" .
     words .
-    map toLower .
-    filter (not . (`elem` ",.?!-:;\"'")) .
+    concatMap (transliterateCharacter . toLower) .
     markdownInlinesToPlainText
 
 markdownToWidget :: [MarkdownBlock] -> WidgetFor site ()
