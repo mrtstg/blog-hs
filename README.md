@@ -133,4 +133,4 @@ If you want only to build image, use `make build-image` command.
 
 # License
 
-Code is under BSD 3 Clause license. Please have a look at the [LICENSE.md](./LICENSE) for details.
+Code is under BSD 3 Clause license. Please have a look at the [LICENSE](./LICENSE) for details.
