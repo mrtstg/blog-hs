@@ -1,9 +1,9 @@
 .stack-work/
 *~
 *.aes
-templates/
+templates/*
 !templates/example.md
-!templates/example.meta
+!templates/example.yml
 .env
 config.yaml
 *.db*
