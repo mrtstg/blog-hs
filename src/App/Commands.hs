@@ -15,6 +15,7 @@ import           App.Types
 import           App.Utils               (checkPostInfoFiles, listDatalessFiles,
                                           normaliseFilePath, parsePostInfoFiles)
 import qualified Control.Concurrent.Lock as Lock
+import           Control.Monad           (when)
 import           Crud                    (initiatePosts)
 import           Data.Function           ((&))
 import           Data.Text               (pack)
@@ -34,8 +35,9 @@ import           Yesod.Core
 
 mkYesodDispatch "App" resourcesApp
 
-runServerCommand :: AppConfig -> Int -> IO ()
-runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPort, dbPath = dbPath', blogDepthLimit = blogDepthLimit}) port = do
+runServerCommand :: AppConfig -> Int -> Bool -> IO ()
+runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPort, dbPath = dbPath', blogDepthLimit = blogDepthLimit}) port createDatabase = do
+  when createDatabase $ runCreateDatabase config
   let postDepthLimit = blogDepthLimit
   redisConnectionPool <-
     connect
@@ -71,8 +73,8 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
           removeFile tmpDBPath
 
 runCommand :: AppCommand -> AppConfig -> AppOpts -> IO ()
-runCommand cmd cfg AppOpts { serverPort = port } =
+runCommand cmd cfg AppOpts { serverPort = port, createDB = createDatabase } =
   case cmd of
-    RunServer      -> runServerCommand cfg port
+    RunServer      -> runServerCommand cfg port createDatabase
     CheckFiles     -> runCheckFiles cfg
     CreateDatabase -> runCreateDatabase cfg

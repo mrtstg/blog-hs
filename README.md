@@ -97,6 +97,8 @@ Sample file is [example.yml](templates/example.yml).
 
 - `-p <PORT>`: sets port for server to listen. Default is 3000.
 
+- `-c` / `--create-db`: create SQLite database before starting the server. **Flag for `run` command.**
+
 ## Commands
 
 Blog-hs currently have several commands:
