@@ -1,0 +1,8 @@
+redisHost: "localhost"
+redisPort: 6379
+dbPath: "./db.db"
+blogDepthLimit: 5
+enableIndexPage: true
+siteName: "YOUR NAME personal blog"
+siteHost: "http://localhost:3000"
+robotsFilePath: "./robots.txt"
