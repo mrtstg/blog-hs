@@ -41,8 +41,8 @@ your server, correct this manually.**
 
 The main idea of project is storing posts of blog in Markdown files in `templates` directory, so the name
 of files and folders will be URL of page. Each post consists of two files:
-- Markdown file, which includes page content
-- YML file, which inclues information about post like title, image, description etc.
+- Markdown file, which includes page content ([sample file](templates/example.md))
+- YML file, which inclues information about post like title, image, description etc. ([sample file](templates/example.yml))
 
 For example, post `https://YOURSITE.HERE/post/haskell/how-to-start-yesod` will be stored in files 
 `./templates/haskell/how-to-start-yesod.md` and `./templates/haskell/how-to-start-yesod.yml`.
@@ -75,6 +75,19 @@ All details specified in [`Parser/Inline.hs`](src/Parser/Inline.hs) and [`Parser
 
 Some symbols (like russian alphabet by default) gets translated into english symbols. **All symbols
 except this by default will be ignored**. For correcting this behavior see [`transliterateCharacter`](src/Parser/Utils.hs) function.
+
+## Post info
+
+Post info always stored in .yml (*not .yaml*) file with same name and have following fields:
+
+| Field | Type | Description |
+|------|-------|-------------|
+|name | string | Post title |
+|description | string | Post description|
+|date | string | Post date in format of "YYYY-MM-DD" |
+|images | list of string | Photo URLs list for post preview, opengraph and etc. |
+
+Sample file is [example.yml](templates/example.yml).
 
 # Usage
 
