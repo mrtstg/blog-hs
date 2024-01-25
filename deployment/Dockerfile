@@ -13,4 +13,4 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 WORKDIR /usr/src/app
 COPY --from=builder /root/.local/bin/blog-hs .
-CMD /usr/src/app/blog-hs run
+CMD /usr/src/app/blog-hs -c run

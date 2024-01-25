@@ -29,6 +29,7 @@ appParser =
        (str >>= parsePath')
        (long "file" <> short 'f' <> metavar "FILE" <> help "Configuration file path")) <*>
   option auto (long "port" <> short 'p' <> metavar "PORT" <> help "Server port to listen" <> value 3000) <*>
+  switch (long "create-db" <> short 'c' <> help "Create SQLite database before starting the server") <*>
   subparser
     (command "run" (info runServerParser (progDesc "Run server")) <>
      command
