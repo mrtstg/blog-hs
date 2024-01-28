@@ -60,6 +60,14 @@ PostPhoto
   post PostId
   UniquePostPhoto post url
   deriving Show
+Category
+  name String
+  description String
+  UniqueCategory name
+PostCategory
+  post PostId
+  category CategoryId
+  UniquePostCategory post category
 |]
 
 

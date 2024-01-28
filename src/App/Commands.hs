@@ -12,7 +12,8 @@ module App.Commands
 import           App.Config
 import           App.PostInfo            (PostInfo (..))
 import           App.Types
-import           App.Utils               (checkPostInfoFiles, listDatalessFiles,
+import           App.Utils               (checkCategoriesPosts,
+                                          checkPostInfoFiles, listDatalessFiles,
                                           normaliseFilePath, parsePostInfoFiles)
 import qualified Control.Concurrent.Lock as Lock
 import           Control.Monad           (when)
@@ -47,14 +48,15 @@ runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPor
   warp port App {..}
 
 runCheckFiles :: AppConfig -> IO ()
-runCheckFiles _ = do
+runCheckFiles AppConfig { postsCategories = categories' } = do
   res <- checkPostInfoFiles "./templates"
-  case res of
-    (Just _) -> putStrLn "Everything is ok!"
-    Nothing  -> exitWith (ExitFailure 3)
+  res2 <- checkCategoriesPosts categories' "./templates"
+  case (res, res2) of
+    (Just _, Just _) -> putStrLn "Everything is ok!"
+    _somethingFailed -> exitWith (ExitFailure 3)
 
 runCreateDatabase :: AppConfig -> IO ()
-runCreateDatabase (AppConfig {dbPath = dbPath}) = do
+runCreateDatabase (AppConfig {dbPath = dbPath, postsCategories = categories}) = do
   filesCheckRes <- checkPostInfoFiles "./templates"
   case filesCheckRes of
     Nothing -> exitWith (ExitFailure 3)
@@ -66,7 +68,10 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
           exitWith (ExitFailure 2)
         (Right lst) -> do
           let tmpDBPath = addExtension dbPath "tmp"
-          runSqlite (pack tmpDBPath) $ runMigration dbMigration
+          runSqlite (pack tmpDBPath) $ do
+              runMigration dbMigration
+              _ <- insertMany $ map (\(PostCategoryInfo name desc) -> Category name desc) categories
+              return ()
           posts <- initiatePosts (pack tmpDBPath) lst
           putStrLn $ "Created " ++ show posts ++ " posts!"
           copyFile tmpDBPath dbPath

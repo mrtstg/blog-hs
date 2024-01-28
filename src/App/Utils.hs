@@ -10,11 +10,13 @@ module App.Utils
   , normaliseFilePath
   , processPostPathParts
   , generatePostUrlFromRelativeFile
+  , checkCategoriesPosts
   ) where
 
-import           App.Config       (AppConfig (..))
+import           App.Config       (AppConfig (..), PostCategoryInfo (..))
 import           App.PostInfo     (PostInfo (..), parsePostInfoFromFile)
 import           Control.Monad    (forM_)
+import           Data.List        (intercalate)
 import qualified Data.Text        as T
 import           Data.Yaml        (ParseException, decodeFileEither)
 import           Env              (getBoolFromEnv, getIntFromEnv,
@@ -61,6 +63,31 @@ checkPostInfoFiles p = do
       forM_ lst putStrLn
       return Nothing
 
+checkCategoriesPosts :: [PostCategoryInfo] -> FilePath -> IO (Maybe ())
+checkCategoriesPosts categories' p = do
+  metaFiles <- listPostInfoFiles p
+  checkRes <- findInvalidCategoriesPosts categories' metaFiles
+  forM_ checkRes (\(f, categories) -> do
+    putStrLn $ "Post " ++ show f ++ " has unknown categories: " ++ intercalate ", " categories)
+  case checkRes of
+    [] -> return $ Just ()
+    _  -> return Nothing
+
+findInvalidCategoriesPosts :: [PostCategoryInfo] -> [FilePath] -> IO [(FilePath, [String])]
+findInvalidCategoriesPosts postCategories files = let
+  categoriesNames :: [String]
+  categoriesNames = map postCategoryName postCategories
+  result :: [IO (FilePath, [String])]
+  result = map (\f -> do
+      res <- (decodeFileEither f :: IO (Either ParseException PostInfo))
+      case res of
+        (Left _)                                       -> return (f, [])
+        (Right (PostInfo { categories = categories })) -> return (f, filter (`notElem` categoriesNames) categories)
+    ) files
+  in do
+    unfilteredRes <- sequence result
+    return $ filter (not . null . snd) unfilteredRes
+
 listPostInfoFiles :: FilePath -> IO [FilePath]
 listPostInfoFiles p = do
   files <- listMarkdownFiles p
@@ -106,7 +133,7 @@ getAppConfigFromEnv = do
   siteName <- getOptStringFromEnv "SITE_NAME"
   siteHost <- getOptStringFromEnv "SITE_HOST"
   robotsFilePath <- getOptStringFromEnv "ROBOTS_TXT_PATH"
-  return $ AppConfig { .. }
+  return $ AppConfig { postsCategories = [], .. }
 
 getAppConfigFromFile :: FilePath -> IO (Either String AppConfig)
 getAppConfigFromFile p = do

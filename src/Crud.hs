@@ -14,6 +14,7 @@ module Crud
 
 import           App.PostInfo            (PostInfo (..))
 import           App.Utils               (normaliseFilePath)
+import           Control.Monad           (forM_)
 import           Data.Text               (Text)
 import           Database.Persist
 import           Database.Persist.Sqlite
@@ -54,10 +55,18 @@ initiatePosts :: DbPath -> [(FilePath, PostInfo)] -> IO PostsAmount
 initiatePosts dbPath = helper 0 where
     helper :: Int -> [(FilePath, PostInfo)] -> IO PostsAmount
     helper acc [] = return acc
-    helper acc ((f, PostInfo name' desc dt img):ps) = do
+    helper acc ((f, PostInfo name' desc dt img categories'):ps) = do
         runSqlite dbPath $ do
             postId <- insert $ Post (normaliseFilePath f) name' desc dt
             case img of
               Nothing     -> return ()
               (Just img') -> mapM_ (\x -> insert $ PostPhoto x postId) img'
+            forM_ categories' (\c -> do
+                categoryId <- getBy $ UniqueCategory c
+                case categoryId of
+                  Nothing    -> return ()
+                  (Just (Entity cId _)) -> do
+                      _ <- insert $ PostCategory postId cId
+                      return ()
+                )
         helper (acc + 1) ps
