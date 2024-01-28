@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module App.PostInfo
   ( PostInfo(..)
@@ -15,11 +16,18 @@ data PostInfo = PostInfo
   , description :: !String
   , date        :: !Day
   , images      :: !(Maybe [String])
+  , categories  :: ![String]
   } deriving (Generic, Show, Eq)
 
 parsePostInfoFromFile :: FilePath -> IO (Either ParseException PostInfo)
 parsePostInfoFromFile = decodeFileEither
 
-instance FromJSON PostInfo
+instance FromJSON PostInfo where
+    parseJSON = withObject "PostInfo" $ \v -> PostInfo
+        <$> v .: "name"
+        <*> v .:? "description" .!= ""
+        <*> v .: "date"
+        <*> v .:? "images"
+        <*> v .:? "categories" .!= []
 
 instance JSON.ToJSON PostInfo
