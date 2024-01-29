@@ -11,14 +11,17 @@ import           App.Config              (siteHost, siteName)
 import           App.PostInfo            (PostInfo (..), parsePostInfoFromFile)
 import           App.Redis               (cacheRedisDataMD5,
                                           getCachedRedisDataMD5)
-import           App.Utils               (processPostPathParts)
+import           App.Utils               (normaliseFilePath,
+                                          processPostPathParts)
 import           Control.Concurrent      (threadDelay)
 import qualified Control.Concurrent.Lock as Lock
+import           Crud                    (findPostByFilename, getPostCategories)
 import qualified Data.Aeson              as JSON
 import qualified Data.ByteString.Char8   as B
 import           Data.ByteString.Lazy    (fromStrict, toStrict)
 import qualified Data.List               as L
 import qualified Data.Text               as T
+import           Database.Persist
 import qualified Database.Redis          as R
 import           Foundation
 import           Parser                  (parseMarkdown)
@@ -150,12 +153,23 @@ getPostR pathParts = do
           mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool filePath'
           let metaPath' = flip addExtension "yml" $ dropExtensions filePath'
           postInfoRes <- liftIO $ getPostInfo redisWriteLock redisConnectionPool metaPath'
-          let siteHost' = siteHost config
-          let siteName' = siteName config
-          case (mdRes, postInfoRes) of
-            (Right (MD md), Right (PInfo PostInfo { name = postName, description = postDescription, date = postDate, images = postImages })) -> do
-              defaultLayout $ do
-                toWidgetHead [hamlet|
+          dbPost <- liftIO $ findPostByFilename dbPath (normaliseFilePath filePath')
+          case dbPost of
+            Nothing -> notFound
+            (Just (Entity pId _)) -> do
+              postCategories <- liftIO $ getPostCategories dbPath pId
+              let siteHost' = siteHost config
+              let siteName' = siteName config
+              case (mdRes, postInfoRes) of
+                (Right (MD md), Right (PInfo PostInfo { name = postName, description = postDescription, date = postDate, images = postImages })) -> do
+                  defaultLayout $ do
+                    [whamlet|
+<section .content>
+  #{L.intercalate "," $ map categoryName postCategories}
+  ^{markdownToWidget md}
+                    |]
+                    setTitle $ toHtml postName
+                    toWidgetHead [hamlet|
 <meta property=og:title content=#{postName}>
 <meta property=og:type content=article>
 <meta property=og:description content=#{postDescription}>
@@ -191,9 +205,4 @@ $maybe siteHost'' <- siteHost'
             }
         }
 |]
-                setTitle $ toHtml postName
-                [whamlet|
-<section .content>
-  ^{markdownToWidget md}
-|]
-            (_, _) -> notFound
+                (_, _) -> notFound
