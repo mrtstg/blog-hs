@@ -9,12 +9,14 @@ module Crud
   isPostsAvailable,
   selectAllPosts,
   createPostPhoto,
-  initiatePosts
+  initiatePosts,
+  getPostCategories
   ) where
 
 import           App.PostInfo            (PostInfo (..))
 import           App.Utils               (normaliseFilePath)
 import           Control.Monad           (forM_)
+import qualified Data.Map                as Map
 import           Data.Text               (Text)
 import           Database.Persist
 import           Database.Persist.Sqlite
@@ -49,6 +51,13 @@ createPostPhoto dbPath (Entity pid _) url = do
     runSqlite dbPath $ do
         _ <- insert $ PostPhoto url pid
         return ()
+
+getPostCategories :: DbPath -> PostId -> IO [Category]
+getPostCategories dbPath pId = runSqlite dbPath $ do
+    relatedCategories <- selectList [PostCategoryPost ==. pId] []
+    categoriesInfoMap <- getMany (map (\(Entity _ (PostCategory _ cId)) -> cId) relatedCategories)
+    let categoriesInfo = Map.elems categoriesInfoMap
+    return categoriesInfo
 
 type PostsAmount = Int
 initiatePosts :: DbPath -> [(FilePath, PostInfo)] -> IO PostsAmount
