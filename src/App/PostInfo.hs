@@ -4,6 +4,7 @@
 module App.PostInfo
   ( PostInfo(..)
   , parsePostInfoFromFile
+  , parsePostInfoFromFile'
   ) where
 
 import qualified Data.Aeson         as JSON
@@ -21,6 +22,13 @@ data PostInfo = PostInfo
 
 parsePostInfoFromFile :: FilePath -> IO (Either ParseException PostInfo)
 parsePostInfoFromFile = decodeFileEither
+
+parsePostInfoFromFile' :: FilePath -> IO (Either String PostInfo)
+parsePostInfoFromFile' p = do
+  res <- decodeFileEither p
+  case res of
+    (Left e)  -> return (Left $ show e)
+    (Right r) -> return $ Right r
 
 instance FromJSON PostInfo where
     parseJSON = withObject "PostInfo" $ \v -> PostInfo
