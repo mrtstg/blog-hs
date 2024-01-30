@@ -11,21 +11,28 @@ module App.Utils
   , processPostPathParts
   , generatePostUrlFromRelativeFile
   , checkCategoriesPosts
+  , urlEncodeString
   ) where
 
-import           App.Config       (AppConfig (..), PostCategoryInfo (..))
-import           App.PostInfo     (PostInfo (..), parsePostInfoFromFile)
-import           Control.Monad    (forM_)
-import           Data.List        (intercalate)
-import qualified Data.Text        as T
-import           Data.Yaml        (ParseException, decodeFileEither)
-import           Env              (getBoolFromEnv, getIntFromEnv,
-                                   getOptStringFromEnv, getStringFromEnv)
+import           App.Config             (AppConfig (..), PostCategoryInfo (..),
+                                         defaultPostRenderOpts)
+import           App.PostInfo           (PostInfo (..), parsePostInfoFromFile)
+import           Control.Monad          (forM_)
+import           Data.ByteString.Char8  (pack, unpack)
+import           Data.List              (intercalate)
+import qualified Data.Text              as T
+import           Data.Yaml              (ParseException, decodeFileEither)
+import           Env                    (getBoolFromEnv, getIntFromEnv,
+                                         getOptStringFromEnv, getStringFromEnv)
+import           Network.HTTP.Types.URI (urlEncode)
 import           System.Directory
-import           System.FilePath  (addExtension, combine, dropExtension,
-                                   dropTrailingPathSeparator, isAbsolute,
-                                   joinPath, normalise, splitPath,
-                                   takeExtension)
+import           System.FilePath        (addExtension, combine, dropExtension,
+                                         dropTrailingPathSeparator, isAbsolute,
+                                         joinPath, normalise, splitPath,
+                                         takeExtension)
+
+urlEncodeString :: String -> String
+urlEncodeString = unpack . urlEncode True . pack
 
 generatePostUrlFromRelativeFile :: String -> FilePath -> String
 generatePostUrlFromRelativeFile baseHost filePath = baseHost <> "/post/" <> processPostPathParts (map (T.pack . dropTrailingPathSeparator) (splitPath . dropExtension $ filePath))
@@ -133,7 +140,7 @@ getAppConfigFromEnv = do
   siteName <- getOptStringFromEnv "SITE_NAME"
   siteHost <- getOptStringFromEnv "SITE_HOST"
   robotsFilePath <- getOptStringFromEnv "ROBOTS_TXT_PATH"
-  return $ AppConfig { postsCategories = [], .. }
+  return $ AppConfig { postsCategories = [], renderSettings = defaultPostRenderOpts, .. }
 
 getAppConfigFromFile :: FilePath -> IO (Either String AppConfig)
 getAppConfigFromFile p = do

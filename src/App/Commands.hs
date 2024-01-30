@@ -27,6 +27,7 @@ import           Database.Redis          (ConnectInfo (..), PortID (..),
 import           Foundation
 import           Handlers.Home           (getHomeR)
 import           Handlers.Post           (getPostR)
+import           Handlers.PostByCategory (getCategoryR)
 import           Handlers.Robots         (getRobotsR)
 import           Handlers.Sitemap        (getSitemapR)
 import           System.Directory        (copyFile, removeFile)
@@ -70,7 +71,7 @@ runCreateDatabase (AppConfig {dbPath = dbPath, postsCategories = categories}) = 
           let tmpDBPath = addExtension dbPath "tmp"
           runSqlite (pack tmpDBPath) $ do
               runMigration dbMigration
-              _ <- insertMany $ map (\(PostCategoryInfo name desc) -> Category name desc) categories
+              _ <- insertMany $ map (\(PostCategoryInfo name displayName desc) -> Category name displayName desc) categories
               return ()
           posts <- initiatePosts (pack tmpDBPath) lst
           putStrLn $ "Created " ++ show posts ++ " posts!"

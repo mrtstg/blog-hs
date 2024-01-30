@@ -41,6 +41,7 @@ mkYesodData
   [parseRoutes|
 / HomeR GET
 /post/*Texts PostR GET
+/category/#Text CategoryR GET
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 |]
@@ -62,6 +63,7 @@ PostPhoto
   deriving Show
 Category
   name String
+  displayName String
   description String
   UniqueCategory name
 PostCategory
