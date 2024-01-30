@@ -10,7 +10,8 @@ module Crud
   selectAllPosts,
   createPostPhoto,
   initiatePosts,
-  getPostCategories
+  getPostCategories,
+  findCategoryByName
   ) where
 
 import           App.PostInfo            (PostInfo (..))
@@ -26,6 +27,13 @@ type DbPath = Text
 
 pageSize :: Int
 pageSize = 10
+
+findCategoryByName :: DbPath -> String -> IO (Maybe (Entity Category))
+findCategoryByName dbPath catName = runSqlite dbPath $ do
+  res <- selectList [CategoryName ==. catName] [LimitTo 1]
+  case res of
+    []    -> return Nothing
+    (p:_) -> return $ Just p
 
 findPostByFilename :: DbPath -> String -> IO (Maybe (Entity Post))
 findPostByFilename dbPath fPath =

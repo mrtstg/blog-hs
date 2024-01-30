@@ -36,6 +36,7 @@ library
       Foundation
       Handlers.Home
       Handlers.Post
+      Handlers.PostByCategory
       Handlers.Robots
       Handlers.Sitemap
       Parser

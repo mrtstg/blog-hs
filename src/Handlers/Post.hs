@@ -7,19 +7,17 @@ module Handlers.Post
   ( getPostR
   ) where
 
-import           App.Config              (siteHost, siteName)
+import           App.Config              (AppConfig (renderSettings),
+                                          PostRenderSettings (..), siteHost,
+                                          siteName)
 import           App.PostInfo            (PostInfo (..), parsePostInfoFromFile')
 import           App.Redis               (ParseableCachedData (..),
-                                          cacheIOJsonData,
-                                          getCachedRedisDataMD5,
                                           getLockCachedParseableData)
 import           App.Utils               (normaliseFilePath,
-                                          processPostPathParts)
-import           Control.Concurrent      (threadDelay)
+                                          processPostPathParts, urlEncodeString)
 import qualified Control.Concurrent.Lock as Lock
 import           Crud                    (findPostByFilename, getPostCategories)
 import qualified Data.Aeson              as JSON
-import qualified Data.ByteString.Char8   as B
 import           Data.ByteString.Lazy    (fromStrict, toStrict)
 import qualified Data.List               as L
 import qualified Data.Text               as T
@@ -68,6 +66,14 @@ getPostInfo lock conn path = do
             (Just v) -> return $ Right (ParsedData v)
             Nothing  -> return $ Left "Failed to decode JSON!"
 
+createCategoryWidget :: Maybe String -> Category -> WidgetFor App ()
+createCategoryWidget baseHost (Category { categoryName = name, categoryDisplayName = dname })= do
+  case baseHost of
+    (Just v) -> do
+      toWidget [hamlet|<a href=#{v}/category/#{urlEncodeString name}> #{dname}|]
+    Nothing -> do
+      toWidget [hamlet|<p> #{name}|]
+
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do
   App {..} <- getYesod
@@ -96,15 +102,25 @@ getPostR pathParts = do
           case dbPost of
             Nothing -> notFound
             (Just (Entity pId _)) -> do
+              let PostRenderSettings { .. } = renderSettings config
               postCategories <- liftIO $ getPostCategories dbPath pId
               let siteHost' = siteHost config
               let siteName' = siteName config
+              let categoryWidgets = map (createCategoryWidget siteHost') postCategories
               case (mdRes, postInfoRes) of
                 (Right (ParsedData md), Right (ParsedData (PostInfo { name = postName, description = postDescription, date = postDate, images = postImages }))) -> do
                   defaultLayout $ do
                     [whamlet|
+$if postRenderTitle
+  <h1> #{postName}
+$if postRenderDate
+  <i> #{show postDate}
+$if postRenderCategories && (not . null) categoryWidgets
+  <p> Categories:
+    $forall widget <- categoryWidgets
+      ^{widget}
 <section .content>
-  #{L.intercalate "," $ map categoryName postCategories}
+
   ^{markdownToWidget md}
                     |]
                     setTitle $ toHtml postName
