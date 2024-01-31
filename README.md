@@ -86,6 +86,13 @@ Post info always stored in .yml (*not .yaml*) file with same name and have follo
 
 Sample file is [example.yml](templates/example.yml).
 
+## Categories
+
+Each post can be attached to different categories using `categories` section. It must contain list of strings, which is
+category names. Using categories, you can group different posts and display then on post category screen.
+
+Posts of current categories can be accessed by URL `/category/<category name>`. It displays 10 posts per page by default.
+
 # Usage
 
 ## Flags
@@ -126,6 +133,33 @@ variables or will use default values.
 | siteName | SITE_NAME | Short description of your website. Used in OG and JSON-LD | - |
 | siteHost | SITE_HOST | Base host of site. For example, "https://mrtstg.ru". No trailing slash at end. Used in generating links. | - |
 | robotsFilePath | ROBOTS_TXT_PATH | Path for robots.txt file. | - |
+
+## Categories customization
+
+Configuration file also contains [`categories`](#categories) section. Its consists of objects of following scheme:
+
+```yaml
+name: "category-name-used-in-URL"
+displayName: "Category name, which will be displayed on website"
+description: "Category description"
+```
+
+**Currently, there is no way to customize categories using environment.**
+
+## Render options
+
+By default, web server renders at the top of the page post title, date and categories. This behavior
+can be changed using `renderSettings` section of server config.
+
+This section has fields `renderTitle`, `renderDate` and `renderCategories`,
+which are controlling the behavior. If field is not presented, value is `True` by default.
+
+```yaml
+renderSettings:
+  renderDate: false
+  renderTitle: true
+# renderCategories: true by default
+```
 
 # Deploy
 

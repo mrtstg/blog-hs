@@ -72,7 +72,7 @@ createCategoryWidget baseHost (Category { categoryName = name, categoryDisplayNa
     (Just v) -> do
       toWidget [hamlet|<a href=#{v}/category/#{urlEncodeString name}> #{dname}|]
     Nothing -> do
-      toWidget [hamlet|<p> #{name}|]
+      toWidget [hamlet|#{name}|]
 
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do

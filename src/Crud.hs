@@ -11,7 +11,9 @@ module Crud
   createPostPhoto,
   initiatePosts,
   getPostCategories,
-  findCategoryByName
+  findCategoryByName,
+  isCategoryPostsAvailable,
+  findPostsByCategory
   ) where
 
 import           App.PostInfo            (PostInfo (..))
@@ -22,11 +24,25 @@ import           Data.Text               (Text)
 import           Database.Persist
 import           Database.Persist.Sqlite
 import           Foundation
+import           Yesod.Core              (MonadUnliftIO)
 
 type DbPath = Text
 
 pageSize :: Int
 pageSize = 10
+
+isCategoryPostsAvailable :: DbPath -> Int -> CategoryId -> IO Bool
+isCategoryPostsAvailable dbPath pageNumber cId = runSqlite dbPath $ do
+  postEntitiesCount <- count [PostCategoryCategory ==. cId]
+  return $ (postEntitiesCount - (pageSize * max 1 pageNumber)) > 0
+
+findPostsByCategory :: DbPath -> Int -> CategoryId -> IO [Entity Post]
+findPostsByCategory dbPath pageNumber cId = runSqlite dbPath $ do
+  postEntities <- selectList [PostCategoryCategory ==. cId] []
+  let postIds = map (\(Entity _ (PostCategory pId _)) -> pId) postEntities
+  selectList [PostId <-. postIds] [
+    Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo pageSize
+    ]
 
 findCategoryByName :: DbPath -> String -> IO (Maybe (Entity Category))
 findCategoryByName dbPath catName = runSqlite dbPath $ do
@@ -44,7 +60,7 @@ findPostByFilename dbPath fPath =
       (p:_) -> return $ Just p
 
 selectLatestPosts :: DbPath -> Int -> IO [Entity Post]
-selectLatestPosts dbPath pageNumber = runSqlite dbPath $ do selectList [] [Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo 10]
+selectLatestPosts dbPath pageNumber = runSqlite dbPath $ do selectList [] [Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo pageSize]
 
 selectAllPosts :: DbPath -> IO [Entity Post]
 selectAllPosts dbPath = runSqlite dbPath $ do selectList [] []
