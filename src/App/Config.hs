@@ -3,37 +3,12 @@
 
 module App.Config
   ( AppConfig(..)
-  , PostCategoryInfo(..)
-  , PostRenderSettings(..)
-  , defaultPostRenderOpts
   ) where
 
+import           App.Config.PostCategoryInfo
+import           App.Config.PostRenderSettings
 import           Data.Yaml
 import           GHC.Generics
-
-data PostCategoryInfo = PostCategoryInfo
-  { postCategoryName        :: !String,
-    postCategoryDisplayName :: !String,
-    postCategoryDescription :: !String
-  } deriving (Generic, Show)
-
-instance FromJSON PostCategoryInfo where
-  parseJSON = withObject "PostCategoryInfo" $ \v -> PostCategoryInfo <$> v .: "name" <*> v .: "displayName" <*> v .: "description"
-
-data PostRenderSettings = PostRenderSettings
-  { postRenderTitle      :: !Bool,
-    postRenderDate       :: !Bool,
-    postRenderCategories :: !Bool
-  } deriving (Generic, Show)
-
-instance FromJSON PostRenderSettings where
-  parseJSON = withObject "PostRenderSettings" $ \v -> PostRenderSettings
-    <$> v .:? "renderTitle" .!= True
-    <*> v .:? "renderDate" .!= True
-    <*> v .:? "renderCategories" .!= True
-
-defaultPostRenderOpts :: PostRenderSettings
-defaultPostRenderOpts = PostRenderSettings True True True
 
 data AppConfig = AppConfig
   { redisHost       :: !String
