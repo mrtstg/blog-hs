@@ -7,13 +7,14 @@ module Handlers.Home
   ( getHomeR
   ) where
 
-import           App.Config       (enableIndexPage)
-import           Crud             (isPostsAvailable, selectLatestPosts)
-import           Data.Function    ((&))
+import           App.Config              (AppConfig (disabledPages))
+import           App.Config.PageSettings (PageName (..), PageSettings (..))
+import           Crud                    (isPostsAvailable, selectLatestPosts)
+import           Data.Function           ((&))
 import           Data.Text
-import           Database.Persist (Entity (..))
+import           Database.Persist        (Entity (..))
 import           Foundation
-import           System.FilePath  (dropExtensions)
+import           System.FilePath         (dropExtensions)
 import           Text.Read
 import           Yesod.Core
 
@@ -27,7 +28,8 @@ getPageValue param = case param of
 getHomeR :: Handler Html
 getHomeR = do
   App { .. } <- getYesod
-  if not (config & enableIndexPage) then notFound else do
+  let (PageSettings disabledPages') = disabledPages config
+  if IndexPage `Prelude.elem` disabledPages' then notFound else do
     pageParam <- lookupGetParam "page"
     let pageValue = getPageValue pageParam
     posts <- liftIO $ selectLatestPosts dbPath pageValue

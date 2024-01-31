@@ -26,6 +26,9 @@ library
   exposed-modules:
       App.Commands
       App.Config
+      App.Config.PageSettings
+      App.Config.PostCategoryInfo
+      App.Config.PostRenderSettings
       App.Parser
       App.PostInfo
       App.Redis
@@ -36,6 +39,7 @@ library
       Foundation
       Handlers.Home
       Handlers.Post
+      Handlers.PostByCategory
       Handlers.Robots
       Handlers.Sitemap
       Parser

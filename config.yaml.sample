@@ -6,3 +6,13 @@ enableIndexPage: true
 siteName: "YOUR NAME personal blog"
 siteHost: "http://localhost:3000"
 robotsFilePath: "./robots.txt"
+
+categories:
+  - name: "bananas-posts"
+    displayName: "Bananas"
+    description: "More posts: /category/bananas-posts"
+
+disabledPages: []
+
+renderSettings:
+  renderDate: true
