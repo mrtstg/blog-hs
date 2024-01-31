@@ -14,22 +14,29 @@ module App.Utils
   , urlEncodeString
   ) where
 
-import           App.Config             (AppConfig (..), PostCategoryInfo (..),
-                                         defaultPostRenderOpts)
-import           App.PostInfo           (PostInfo (..), parsePostInfoFromFile)
-import           Control.Monad          (forM_)
-import           Data.ByteString.Char8  (pack, unpack)
-import           Data.List              (intercalate)
-import qualified Data.Text              as T
-import           Data.Yaml              (ParseException, decodeFileEither)
-import           Env                    (getBoolFromEnv, getIntFromEnv,
-                                         getOptStringFromEnv, getStringFromEnv)
-import           Network.HTTP.Types.URI (urlEncode)
+import           App.Config                    (AppConfig (..))
+import           App.Config.PageSettings       (PageName (..),
+                                                PageSettings (..))
+import           App.Config.PostCategoryInfo   (PostCategoryInfo (..))
+import           App.Config.PostRenderSettings (defaultPostRenderOpts)
+import           App.PostInfo                  (PostInfo (..),
+                                                parsePostInfoFromFile)
+import           Control.Monad                 (forM_)
+import           Data.ByteString.Char8         (pack, unpack)
+import           Data.List                     (intercalate)
+import qualified Data.Text                     as T
+import           Data.Yaml                     (ParseException,
+                                                decodeFileEither)
+import           Env                           (getBoolFromEnv, getIntFromEnv,
+                                                getOptStringFromEnv,
+                                                getStringFromEnv)
+import           Network.HTTP.Types.URI        (urlEncode)
 import           System.Directory
-import           System.FilePath        (addExtension, combine, dropExtension,
-                                         dropTrailingPathSeparator, isAbsolute,
-                                         joinPath, normalise, splitPath,
-                                         takeExtension)
+import           System.FilePath               (addExtension, combine,
+                                                dropExtension,
+                                                dropTrailingPathSeparator,
+                                                isAbsolute, joinPath, normalise,
+                                                splitPath, takeExtension)
 
 urlEncodeString :: String -> String
 urlEncodeString = unpack . urlEncode True . pack
@@ -131,16 +138,29 @@ listFiles pred' path = do
       return $ concat lst
 
 getAppConfigFromEnv :: IO AppConfig
-getAppConfigFromEnv = do
-  blogDepthLimit <- getIntFromEnv "DEPTH_LEVEL" 1
-  redisHost <- getStringFromEnv "REDIS_HOST" "localhost"
-  redisPort <- getIntFromEnv "REDIS_PORT" 6379
-  dbPath <- getStringFromEnv "DB_PATH" "./blog.db"
-  enableIndexPage <- getBoolFromEnv "ENABLE_INDEX" True
-  siteName <- getOptStringFromEnv "SITE_NAME"
-  siteHost <- getOptStringFromEnv "SITE_HOST"
-  robotsFilePath <- getOptStringFromEnv "ROBOTS_TXT_PATH"
-  return $ AppConfig { postsCategories = [], renderSettings = defaultPostRenderOpts, .. }
+getAppConfigFromEnv = let
+    generatePageSettings :: Bool -> Bool -> PageSettings
+    generatePageSettings enableIndex enableCategories = PageSettings $ case (enableIndex, enableCategories) of
+      (True, True)   -> []
+      (False, True)  -> [IndexPage]
+      (True, False)  -> [CategoryPage]
+      (False, False) -> [IndexPage, CategoryPage]
+  in do
+    blogDepthLimit <- getIntFromEnv "DEPTH_LEVEL" 1
+    redisHost <- getStringFromEnv "REDIS_HOST" "localhost"
+    redisPort <- getIntFromEnv "REDIS_PORT" 6379
+    dbPath <- getStringFromEnv "DB_PATH" "./blog.db"
+    enableIndexPage <- getBoolFromEnv "ENABLE_INDEX" True
+    enableCategories <- getBoolFromEnv "ENABLE_CATEGORIES" True
+    siteName <- getOptStringFromEnv "SITE_NAME"
+    siteHost <- getOptStringFromEnv "SITE_HOST"
+    robotsFilePath <- getOptStringFromEnv "ROBOTS_TXT_PATH"
+
+    return $ AppConfig {
+      postsCategories = [],
+      renderSettings = defaultPostRenderOpts,
+      disabledPages = generatePageSettings enableIndexPage enableCategories,
+      .. }
 
 getAppConfigFromFile :: FilePath -> IO (Either String AppConfig)
 getAppConfigFromFile p = do

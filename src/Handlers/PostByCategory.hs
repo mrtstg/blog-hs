@@ -3,12 +3,14 @@
 {-# LANGUAGE RecordWildCards   #-}
 module Handlers.PostByCategory (getCategoryR) where
 
-import           App.Utils        (urlEncodeString)
+import           App.Config              (AppConfig (disabledPages))
+import           App.Config.PageSettings (PageName (..), PageSettings (..))
+import           App.Utils               (urlEncodeString)
 import           Crud
-import qualified Data.Text        as T
+import qualified Data.Text               as T
 import           Database.Persist
 import           Foundation
-import           System.FilePath  (dropExtensions)
+import           System.FilePath         (dropExtensions)
 import           Text.Read
 import           Yesod.Core
 
@@ -21,19 +23,21 @@ getPageValue param = case param of
 
 getCategoryR :: T.Text -> Handler Html
 getCategoryR category = do
-  let encodedCategory = urlEncodeString (T.unpack category)
   App { .. } <- getYesod
-  findRes <- liftIO $ findCategoryByName dbPath (T.unpack category)
-  case findRes of
-    Nothing -> notFound
-    (Just (Entity cId category')) -> do
-      pageParam <- lookupGetParam "page"
-      let pageValue = getPageValue pageParam
-      posts <- liftIO $ findPostsByCategory dbPath pageValue cId
-      postsAvailable <- liftIO $ isCategoryPostsAvailable dbPath pageValue cId
-      defaultLayout $ do
-        setTitle $ toHtml (categoryDisplayName category')
-        [whamlet|
+  let (PageSettings disabledPages') = disabledPages config
+  if CategoryPage `elem` disabledPages' then notFound else do
+    let encodedCategory = urlEncodeString (T.unpack category)
+    findRes <- liftIO $ findCategoryByName dbPath (T.unpack category)
+    case findRes of
+      Nothing -> notFound
+      (Just (Entity cId category')) -> do
+        pageParam <- lookupGetParam "page"
+        let pageValue = getPageValue pageParam
+        posts <- liftIO $ findPostsByCategory dbPath pageValue cId
+        postsAvailable <- liftIO $ isCategoryPostsAvailable dbPath pageValue cId
+        defaultLayout $ do
+          setTitle $ toHtml (categoryDisplayName category')
+          [whamlet|
 <h1> #{categoryDisplayName category'}
 <p> #{categoryDescription category'}
 $if Prelude.null posts

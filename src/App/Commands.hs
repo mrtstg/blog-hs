@@ -10,29 +10,28 @@ module App.Commands
   ) where
 
 import           App.Config
-import           App.PostInfo            (PostInfo (..))
+import           App.Config.PostCategoryInfo
 import           App.Types
-import           App.Utils               (checkCategoriesPosts,
-                                          checkPostInfoFiles, listDatalessFiles,
-                                          normaliseFilePath, parsePostInfoFiles)
-import qualified Control.Concurrent.Lock as Lock
-import           Control.Monad           (when)
-import           Crud                    (initiatePosts)
-import           Data.Function           ((&))
-import           Data.Text               (pack)
+import           App.Utils                   (checkCategoriesPosts,
+                                              checkPostInfoFiles,
+                                              parsePostInfoFiles)
+import qualified Control.Concurrent.Lock     as Lock
+import           Control.Monad               (when)
+import           Crud                        (initiatePosts)
+import           Data.Text                   (pack)
 import           Database.Persist
 import           Database.Persist.Sqlite
-import           Database.Redis          (ConnectInfo (..), PortID (..),
-                                          connect, defaultConnectInfo)
+import           Database.Redis              (ConnectInfo (..), PortID (..),
+                                              connect, defaultConnectInfo)
 import           Foundation
-import           Handlers.Home           (getHomeR)
-import           Handlers.Post           (getPostR)
-import           Handlers.PostByCategory (getCategoryR)
-import           Handlers.Robots         (getRobotsR)
-import           Handlers.Sitemap        (getSitemapR)
-import           System.Directory        (copyFile, removeFile)
-import           System.Exit             (ExitCode (..), exitWith)
-import           System.FilePath         (addExtension)
+import           Handlers.Home               (getHomeR)
+import           Handlers.Post               (getPostR)
+import           Handlers.PostByCategory     (getCategoryR)
+import           Handlers.Robots             (getRobotsR)
+import           Handlers.Sitemap            (getSitemapR)
+import           System.Directory            (copyFile, removeFile)
+import           System.Exit                 (ExitCode (..), exitWith)
+import           System.FilePath             (addExtension)
 import           Yesod.Core
 
 mkYesodDispatch "App" resourcesApp

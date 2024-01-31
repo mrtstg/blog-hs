@@ -7,30 +7,35 @@ module Handlers.Post
   ( getPostR
   ) where
 
-import           App.Config              (AppConfig (renderSettings),
-                                          PostRenderSettings (..), siteHost,
-                                          siteName)
-import           App.PostInfo            (PostInfo (..), parsePostInfoFromFile')
-import           App.Redis               (ParseableCachedData (..),
-                                          getLockCachedParseableData)
-import           App.Utils               (normaliseFilePath,
-                                          processPostPathParts, urlEncodeString)
-import qualified Control.Concurrent.Lock as Lock
-import           Crud                    (findPostByFilename, getPostCategories)
-import qualified Data.Aeson              as JSON
-import           Data.ByteString.Lazy    (fromStrict, toStrict)
-import qualified Data.List               as L
-import qualified Data.Text               as T
+import           App.Config                    (AppConfig (disabledPages, renderSettings),
+                                                siteHost, siteName)
+import           App.Config.PageSettings       (PageName (..),
+                                                PageSettings (..))
+import           App.Config.PostRenderSettings (PostRenderSettings (..))
+import           App.PostInfo                  (PostInfo (..),
+                                                parsePostInfoFromFile')
+import           App.Redis                     (ParseableCachedData (..),
+                                                getLockCachedParseableData)
+import           App.Utils                     (normaliseFilePath,
+                                                processPostPathParts,
+                                                urlEncodeString)
+import qualified Control.Concurrent.Lock       as Lock
+import           Crud                          (findPostByFilename,
+                                                getPostCategories)
+import qualified Data.Aeson                    as JSON
+import           Data.ByteString.Lazy          (fromStrict, toStrict)
+import qualified Data.List                     as L
+import qualified Data.Text                     as T
 import           Database.Persist
-import qualified Database.Redis          as R
+import qualified Database.Redis                as R
 import           Foundation
-import           Parser                  (parseMarkdown)
-import           Parser.Html             (markdownToWidget)
-import           Parser.Types            (MarkdownBlock)
-import           System.Directory        (doesFileExist)
+import           Parser                        (parseMarkdown)
+import           Parser.Html                   (markdownToWidget)
+import           Parser.Types                  (MarkdownBlock)
+import           System.Directory              (doesFileExist)
 import           System.FilePath
-import           System.IO               (readFile')
-import           Text.Blaze.Html         (preEscapedToHtml)
+import           System.IO                     (readFile')
+import           Text.Blaze.Html               (preEscapedToHtml)
 import           Yesod.Core
 
 getMarkdownFileAndParse :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String (ParseableCachedData [MarkdownBlock]))
@@ -66,13 +71,13 @@ getPostInfo lock conn path = do
             (Just v) -> return $ Right (ParsedData v)
             Nothing  -> return $ Left "Failed to decode JSON!"
 
-createCategoryWidget :: Maybe String -> Category -> WidgetFor App ()
-createCategoryWidget baseHost (Category { categoryName = name, categoryDisplayName = dname })= do
-  case baseHost of
-    (Just v) -> do
+createCategoryWidget :: Maybe String -> PageSettings -> Category -> WidgetFor App ()
+createCategoryWidget baseHost (PageSettings disabledPages') (Category { categoryName = name, categoryDisplayName = dname })= do
+  case (baseHost, CategoryPage `elem` disabledPages') of
+    (Just v, False) -> do
       toWidget [hamlet|<a href=#{v}/category/#{urlEncodeString name}> #{dname}|]
-    Nothing -> do
-      toWidget [hamlet|#{name}|]
+    _anyOther -> do
+      toWidget [hamlet|#{name} |]
 
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do
@@ -106,7 +111,7 @@ getPostR pathParts = do
               postCategories <- liftIO $ getPostCategories dbPath pId
               let siteHost' = siteHost config
               let siteName' = siteName config
-              let categoryWidgets = map (createCategoryWidget siteHost') postCategories
+              let categoryWidgets = map (createCategoryWidget siteHost' (disabledPages config)) postCategories
               case (mdRes, postInfoRes) of
                 (Right (ParsedData md), Right (ParsedData (PostInfo { name = postName, description = postDescription, date = postDate, images = postImages }))) -> do
                   defaultLayout $ do

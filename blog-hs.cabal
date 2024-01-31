@@ -26,6 +26,8 @@ library
   exposed-modules:
       App.Commands
       App.Config
+      App.Config.PageSettings
+      App.Config.PostCategoryInfo
       App.Config.PostRenderSettings
       App.Parser
       App.PostInfo

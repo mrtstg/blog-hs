@@ -5,6 +5,7 @@ module App.Config
   ( AppConfig(..)
   ) where
 
+import           App.Config.PageSettings       (PageSettings, defaultPageOpts)
 import           App.Config.PostCategoryInfo
 import           App.Config.PostRenderSettings
 import           Data.Yaml
@@ -15,12 +16,12 @@ data AppConfig = AppConfig
   , redisPort       :: !Int
   , dbPath          :: !String
   , blogDepthLimit  :: !Int
-  , enableIndexPage :: !Bool
   , siteName        :: !(Maybe String)
   , siteHost        :: !(Maybe String)
   , robotsFilePath  :: !(Maybe String)
   , postsCategories :: ![PostCategoryInfo]
   , renderSettings  :: !PostRenderSettings
+  , disabledPages   :: !PageSettings
   } deriving (Generic, Show)
 
 instance FromJSON AppConfig where
@@ -29,9 +30,9 @@ instance FromJSON AppConfig where
     <*> v .: "redisPort"
     <*> v .: "dbPath"
     <*> v .: "blogDepthLimit"
-    <*> v .: "enableIndexPage"
     <*> v .:? "siteName"
     <*> v .:? "siteHost"
     <*> v .:? "robotsFilePath"
     <*> v .:? "categories" .!= []
     <*> v .:? "renderSettings" .!= defaultPostRenderOpts
+    <*> v .:? "disabledPages" .!= defaultPageOpts
