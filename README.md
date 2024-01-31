@@ -129,10 +129,19 @@ variables or will use default values.
 | redisPort | REDIS_PORT | Port of redis server | 6379 |
 | dbPath | DB_PATH | Path of SQLite database | ./blog.db |
 | blogDepthLimit | DEPTH_LEVEL | How deep is allowed to go into folders. If request will try to get file deeper than limit, server will response PermissionDenied error. | 1 |
-| enableIndexPage | ENABLE_INDEX | Enable index page. If disabled, server will response not found error. | True (1) |
 | siteName | SITE_NAME | Short description of your website. Used in OG and JSON-LD | - |
 | siteHost | SITE_HOST | Base host of site. For example, "https://mrtstg.ru". No trailing slash at end. Used in generating links. | - |
 | robotsFilePath | ROBOTS_TXT_PATH | Path for robots.txt file. | - |
+
+## Page switches
+
+If nececcary, you can disable some pages, like index or category page. In this case, you should use `disabledPages` option in
+configuration file. It accepts list of strings, where:
+- `index` is index page option
+- `category`/`categories` is category page option. **Also, it disables link generation on categories on post page**.
+
+In other case, you can use `ENABLE_INDEX` and `ENABLE_CATEGORIES` environment variables, which accept
+`1` as True or any other value as False.
 
 ## Categories customization
 
