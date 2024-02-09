@@ -27,6 +27,7 @@ import           Database.Persist.Sqlite
 import           Database.Persist.TH
 import           Database.Redis          (Connection)
 import           Yesod.Core
+import           Yesod.Persist
 
 data App = App
   { postDepthLimit      :: !Int
@@ -97,3 +98,9 @@ $doctype 5
 <h1> Page is not found
 |]
   errorHandler other    = defaultErrorHandler other
+
+instance YesodPersist App where
+  type YesodPersistBackend App = SqlBackend
+  runDB f = do
+    App { dbPath = dbPath } <- getYesod
+    withSqliteConn dbPath $ runSqlConn f

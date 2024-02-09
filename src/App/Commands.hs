@@ -17,6 +17,7 @@ import           App.Utils                   (checkCategoriesPosts,
                                               parsePostInfoFiles)
 import qualified Control.Concurrent.Lock     as Lock
 import           Control.Monad               (when)
+import           Control.Monad.Logger
 import           Crud                        (initiatePosts)
 import           Data.Text                   (pack)
 import           Database.Persist
@@ -33,6 +34,7 @@ import           System.Directory            (copyFile, removeFile)
 import           System.Exit                 (ExitCode (..), exitWith)
 import           System.FilePath             (addExtension)
 import           Yesod.Core
+import           Yesod.Persist               (YesodPersist (runDB))
 
 mkYesodDispatch "App" resourcesApp
 
@@ -72,7 +74,8 @@ runCreateDatabase (AppConfig {dbPath = dbPath, postsCategories = categories}) = 
               runMigration dbMigration
               _ <- insertMany $ map (\(PostCategoryInfo name displayName desc) -> Category name displayName desc) categories
               return ()
-          posts <- initiatePosts (pack tmpDBPath) lst
+          posts <- runNoLoggingT $ withSqliteConn (pack tmpDBPath) $ do
+            runSqlConn (initiatePosts lst)
           putStrLn $ "Created " ++ show posts ++ " posts!"
           copyFile tmpDBPath dbPath
           removeFile tmpDBPath

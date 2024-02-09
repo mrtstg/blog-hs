@@ -37,6 +37,7 @@ import           System.FilePath
 import           System.IO                     (readFile')
 import           Text.Blaze.Html               (preEscapedToHtml)
 import           Yesod.Core
+import           Yesod.Persist                 (YesodPersist (runDB))
 
 getMarkdownFileAndParse :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String (ParseableCachedData [MarkdownBlock]))
 getMarkdownFileAndParse lock conn path = getLockCachedParseableData lock conn path f where
@@ -103,12 +104,12 @@ getPostR pathParts = do
           mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool filePath'
           let metaPath' = flip addExtension "yml" $ dropExtensions filePath'
           postInfoRes <- liftIO $ getPostInfo redisWriteLock redisConnectionPool metaPath'
-          dbPost <- liftIO $ findPostByFilename dbPath (normaliseFilePath filePath')
+          dbPost <- runDB $ findPostByFilename (normaliseFilePath filePath')
           case dbPost of
             Nothing -> notFound
             (Just (Entity pId _)) -> do
               let PostRenderSettings { .. } = renderSettings config
-              postCategories <- liftIO $ getPostCategories dbPath pId
+              postCategories <- runDB $ getPostCategories pId
               let siteHost' = siteHost config
               let siteName' = siteName config
               let categoryWidgets = map (createCategoryWidget siteHost' (disabledPages config)) postCategories

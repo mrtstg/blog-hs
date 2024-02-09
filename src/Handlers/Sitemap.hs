@@ -12,6 +12,7 @@ import           Database.Persist
 import           Foundation
 import           Text.XML.Generator
 import           Yesod.Core
+import           Yesod.Persist
 
 generateXML :: [Entity Post] -> String -> B.ByteString
 generateXML posts baseHost = let
@@ -28,5 +29,5 @@ getSitemapR = do
     case config & siteHost of
       Nothing -> notFound
       (Just host) -> do
-        posts <- liftIO $ selectAllPosts dbPath
+        posts <- runDB selectAllPosts
         return $ TypedContent "application/xml" (toContent $ generateXML posts host)

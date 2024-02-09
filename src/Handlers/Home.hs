@@ -17,6 +17,7 @@ import           Foundation
 import           System.FilePath         (dropExtensions)
 import           Text.Read
 import           Yesod.Core
+import           Yesod.Persist
 
 getPageValue :: Maybe Text -> Int
 getPageValue param = case param of
@@ -32,8 +33,8 @@ getHomeR = do
   if IndexPage `Prelude.elem` disabledPages' then notFound else do
     pageParam <- lookupGetParam "page"
     let pageValue = getPageValue pageParam
-    posts <- liftIO $ selectLatestPosts dbPath pageValue
-    postsAvailable <- liftIO $ isPostsAvailable dbPath pageValue
+    posts <- runDB $ selectLatestPosts pageValue
+    postsAvailable <- runDB $ isPostsAvailable pageValue
     defaultLayout $ do
         setTitle "Latest posts"
         [whamlet|
