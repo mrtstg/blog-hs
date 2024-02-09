@@ -13,6 +13,7 @@ import           Foundation
 import           System.FilePath         (dropExtensions)
 import           Text.Read
 import           Yesod.Core
+import           Yesod.Persist           (YesodPersist (runDB))
 
 getPageValue :: Maybe T.Text -> Int
 getPageValue param = case param of
@@ -27,14 +28,14 @@ getCategoryR category = do
   let (PageSettings disabledPages') = disabledPages config
   if CategoryPage `elem` disabledPages' then notFound else do
     let encodedCategory = urlEncodeString (T.unpack category)
-    findRes <- liftIO $ findCategoryByName dbPath (T.unpack category)
+    findRes <- runDB $ findCategoryByName (T.unpack category)
     case findRes of
       Nothing -> notFound
       (Just (Entity cId category')) -> do
         pageParam <- lookupGetParam "page"
         let pageValue = getPageValue pageParam
-        posts <- liftIO $ findPostsByCategory dbPath pageValue cId
-        postsAvailable <- liftIO $ isCategoryPostsAvailable dbPath pageValue cId
+        posts <- runDB $ findPostsByCategory pageValue cId
+        postsAvailable <- runDB $ isCategoryPostsAvailable pageValue cId
         defaultLayout $ do
           setTitle $ toHtml (categoryDisplayName category')
           [whamlet|

@@ -68,14 +68,17 @@ library
     , filepath ==1.4.2.2
     , hedis ==0.15.2
     , http-types ==0.12.3
+    , monad-logger
     , optparse-applicative ==0.17.1.0
     , persistent ==2.14.*
     , persistent-sqlite ==2.13.*
     , text >=2 && <2.1
     , time ==1.12.2
+    , transformers
     , xmlgen ==0.6.2.2
     , yaml ==0.11.11.2
     , yesod-core
+    , yesod-persistent ==1.6.0.8
   default-language: Haskell2010
 
 executable blog-hs
@@ -101,14 +104,17 @@ executable blog-hs
     , filepath ==1.4.2.2
     , hedis ==0.15.2
     , http-types ==0.12.3
+    , monad-logger
     , optparse-applicative ==0.17.1.0
     , persistent ==2.14.*
     , persistent-sqlite ==2.13.*
     , text >=2 && <2.1
     , time ==1.12.2
+    , transformers
     , xmlgen ==0.6.2.2
     , yaml ==0.11.11.2
     , yesod-core
+    , yesod-persistent ==1.6.0.8
   default-language: Haskell2010
 
 test-suite blog-hs-test
@@ -138,12 +144,15 @@ test-suite blog-hs-test
     , hspec >=2.0.0
     , hspec-discover
     , http-types ==0.12.3
+    , monad-logger
     , optparse-applicative ==0.17.1.0
     , persistent ==2.14.*
     , persistent-sqlite ==2.13.*
     , text >=2 && <2.1
     , time ==1.12.2
+    , transformers
     , xmlgen ==0.6.2.2
     , yaml ==0.11.11.2
     , yesod-core
+    , yesod-persistent ==1.6.0.8
   default-language: Haskell2010
