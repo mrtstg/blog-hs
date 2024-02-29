@@ -167,10 +167,13 @@ can be changed using `renderSettings` section of server config.
 This section has fields `renderTitle`, `renderDate` and `renderCategories`,
 which are controlling the behavior. If field is not presented, value is `True` by default.
 
+You can disable rendering OpenGraph and JSON-LD information using field `renderMeta`.
+
 ```yaml
 renderSettings:
   renderDate: false
   renderTitle: true
+  renderMeta: false
 # renderCategories: true by default
 ```
 

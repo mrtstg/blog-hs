@@ -166,10 +166,13 @@ description: "Описание категории"
 Эта секция имеет поля `renderTitle`, `renderDate` и `renderCategories`,
 которые управляют поведением. Если поле не указано, его значение `True` по умолчанию.
 
+Вы можете отключить отрисовку OpenGraph и JSON-LD информации при помощи поля `renderMeta`.
+
 ```yaml
 renderSettings:
   renderDate: false
   renderTitle: true
+  renderMeta: false
 # renderCategories: true по умолчанию
 ```
 

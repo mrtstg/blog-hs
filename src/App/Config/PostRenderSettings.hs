@@ -12,7 +12,8 @@ import           GHC.Generics
 data PostRenderSettings = PostRenderSettings
   { postRenderTitle      :: !Bool,
     postRenderDate       :: !Bool,
-    postRenderCategories :: !Bool
+    postRenderCategories :: !Bool,
+    postRenderMeta       :: !Bool
   } deriving (Generic, Show)
 
 instance FromJSON PostRenderSettings where
@@ -20,6 +21,7 @@ instance FromJSON PostRenderSettings where
     <$> v .:? "renderTitle" .!= True
     <*> v .:? "renderDate" .!= True
     <*> v .:? "renderCategories" .!= True
+    <*> v .:? "renderMeta" .!= True
 
 defaultPostRenderOpts :: PostRenderSettings
-defaultPostRenderOpts = PostRenderSettings True True True
+defaultPostRenderOpts = PostRenderSettings True True True True

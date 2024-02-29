@@ -21,6 +21,7 @@ import           App.Utils                     (normaliseFilePath,
                                                 processPostPathParts,
                                                 urlEncodeString)
 import qualified Control.Concurrent.Lock       as Lock
+import           Control.Monad                 (when)
 import           Crud                          (findPostByFilename,
                                                 getPostCategories)
 import qualified Data.Aeson                    as JSON
@@ -132,7 +133,7 @@ $if postRenderCategories && (not . null) categoryWidgets
   ^{markdownToWidget md}
                     |]
                     setTitle $ toHtml postName
-                    toWidgetHead [hamlet|
+                    when postRenderMeta $ toWidgetHead [hamlet|
 <meta property=og:title content=#{postName}>
 <meta property=og:type content=article>
 <meta property=og:description content=#{postDescription}>
