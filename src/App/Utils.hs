@@ -149,6 +149,7 @@ getAppConfigFromEnv = let
     blogDepthLimit <- getIntFromEnv "DEPTH_LEVEL" 1
     redisHost <- getStringFromEnv "REDIS_HOST" "localhost"
     redisPort <- getIntFromEnv "REDIS_PORT" 6379
+    redisCacheTime <- getIntFromEnv "REDIS_CACHE_TIME" 60
     dbPath <- getStringFromEnv "DB_PATH" "./blog.db"
     enableIndexPage <- getBoolFromEnv "ENABLE_INDEX" True
     enableCategories <- getBoolFromEnv "ENABLE_CATEGORIES" True

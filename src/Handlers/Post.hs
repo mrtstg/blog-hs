@@ -8,7 +8,8 @@ module Handlers.Post
   ) where
 
 import           App.Config                    (AppConfig (disabledPages, renderSettings),
-                                                siteHost, siteName)
+                                                redisCacheTime, siteHost,
+                                                siteName)
 import           App.Config.PageSettings       (PageName (..),
                                                 PageSettings (..))
 import           App.Config.PostRenderSettings (PostRenderSettings (..))
@@ -23,7 +24,7 @@ import qualified Control.Concurrent.Lock       as Lock
 import           Crud                          (findPostByFilename,
                                                 getPostCategories)
 import qualified Data.Aeson                    as JSON
-import           Data.ByteString.Lazy          (fromStrict, toStrict)
+import           Data.ByteString.Lazy          (fromStrict)
 import qualified Data.List                     as L
 import qualified Data.Text                     as T
 import           Database.Persist
@@ -39,18 +40,18 @@ import           Text.Blaze.Html               (preEscapedToHtml)
 import           Yesod.Core
 import           Yesod.Persist                 (YesodPersist (runDB))
 
-getMarkdownFileAndParse :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String (ParseableCachedData [MarkdownBlock]))
-getMarkdownFileAndParse lock conn path = getLockCachedParseableData lock conn path f where
+getMarkdownFileAndParse :: Lock.Lock -> R.Connection -> Int -> FilePath -> IO (Either String (ParseableCachedData [MarkdownBlock]))
+getMarkdownFileAndParse lock conn timeout path = getLockCachedParseableData lock conn timeout path f where
   f = do
     fileText <- readFile' path
     return $ parseMarkdown fileText
 
-getPostInfoFileAndParse :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String (ParseableCachedData PostInfo))
-getPostInfoFileAndParse lock conn path = getLockCachedParseableData lock conn path (parsePostInfoFromFile' path)
+getPostInfoFileAndParse :: Lock.Lock -> R.Connection -> Int -> FilePath -> IO (Either String (ParseableCachedData PostInfo))
+getPostInfoFileAndParse lock conn timeout path = getLockCachedParseableData lock conn timeout path (parsePostInfoFromFile' path)
 
-getMarkdown :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String (ParseableCachedData [MarkdownBlock]))
-getMarkdown lock conn path = do
-  res <- getMarkdownFileAndParse lock conn path
+getMarkdown :: Lock.Lock -> R.Connection -> Int -> FilePath -> IO (Either String (ParseableCachedData [MarkdownBlock]))
+getMarkdown lock conn timeout path = do
+  res <- getMarkdownFileAndParse lock conn timeout path
   case res of
     e@(Left _) -> return e
     md@(Right (ParsedData _)) -> return md
@@ -60,9 +61,9 @@ getMarkdown lock conn path = do
         (Just v) -> return $ Right (ParsedData v)
         Nothing  -> return $ Left "Failed to decode JSON!"
 
-getPostInfo :: Lock.Lock -> R.Connection -> FilePath -> IO (Either String (ParseableCachedData PostInfo))
-getPostInfo lock conn path = do
-    res <- getPostInfoFileAndParse lock conn path
+getPostInfo :: Lock.Lock -> R.Connection -> Int -> FilePath -> IO (Either String (ParseableCachedData PostInfo))
+getPostInfo lock conn timeout path = do
+    res <- getPostInfoFileAndParse lock conn timeout path
     case res of
       e@(Left _)           -> return e
       pi'@(Right (ParsedData _)) -> return pi'
@@ -101,9 +102,10 @@ getPostR pathParts = do
                 if fileExists
                   then filePath
                   else indexFilePath
-          mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool filePath'
+          let redisCacheTime' = redisCacheTime config
+          mdRes <- liftIO $ getMarkdown redisWriteLock redisConnectionPool redisCacheTime' filePath'
           let metaPath' = flip addExtension "yml" $ dropExtensions filePath'
-          postInfoRes <- liftIO $ getPostInfo redisWriteLock redisConnectionPool metaPath'
+          postInfoRes <- liftIO $ getPostInfo redisWriteLock redisConnectionPool redisCacheTime' metaPath'
           dbPost <- runDB $ findPostByFilename (normaliseFilePath filePath')
           case dbPost of
             Nothing -> notFound

@@ -24,6 +24,7 @@ Using [Redis](https://redis.io/) for caching data and sqlite for providing sorte
 
 - [ ] Generation of table of contents
 - [ ] Option to disable header's id autogeneration
+- [ ] React on 0 seconds cache time as its disabling
 
 # Table of contents
 
@@ -132,6 +133,7 @@ variables or will use default values.
 | siteName | SITE_NAME | Short description of your website. Used in OG and JSON-LD | - |
 | siteHost | SITE_HOST | Base host of site. For example, "https://mrtstg.ru". No trailing slash at end. Used in generating links. | - |
 | robotsFilePath | ROBOTS_TXT_PATH | Path for robots.txt file. | - |
+| redisCacheTime | REDIS_CACHE_TIME | Time in seconds at what period Redis must store parsed port | 60 |
 
 ## Page switches
 

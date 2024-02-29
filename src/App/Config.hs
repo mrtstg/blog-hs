@@ -22,6 +22,7 @@ data AppConfig = AppConfig
   , postsCategories :: ![PostCategoryInfo]
   , renderSettings  :: !PostRenderSettings
   , disabledPages   :: !PageSettings
+  , redisCacheTime  :: !Int
   } deriving (Generic, Show)
 
 instance FromJSON AppConfig where
@@ -36,3 +37,4 @@ instance FromJSON AppConfig where
     <*> v .:? "categories" .!= []
     <*> v .:? "renderSettings" .!= defaultPostRenderOpts
     <*> v .:? "disabledPages" .!= defaultPageOpts
+    <*> v .:? "redisCacheTime" .!= 60

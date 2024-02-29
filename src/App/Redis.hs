@@ -16,8 +16,15 @@ import qualified Database.Redis          as R
 
 data ParseableCachedData t = RawData !B.ByteString | ParsedData !t
 
-getLockCachedParseableData :: (FromJSON t, ToJSON t) => Lock.Lock -> R.Connection -> String -> IO (Either String t) -> IO (Either String (ParseableCachedData t))
-getLockCachedParseableData lock conn key cacheValue = let
+getLockCachedParseableData
+  :: (FromJSON t, ToJSON t)
+  => Lock.Lock
+  -> R.Connection
+  -> Int
+  -> String
+  -> IO (Either String t)
+  -> IO (Either String (ParseableCachedData t))
+getLockCachedParseableData lock conn timeout key cacheValue = let
   cacheData :: IO (Either String (ParseableCachedData t))
   cacheData = do
     locked' <- Lock.locked lock
@@ -25,7 +32,7 @@ getLockCachedParseableData lock conn key cacheValue = let
       _ <- threadDelay 50000
       cacheData
     else do
-      Lock.with lock $ cacheIOJsonData conn key cacheValue
+      Lock.with lock $ cacheIOJsonData conn timeout key cacheValue
   in do
     v <- getCachedRedisDataMD5 conn key
     case v of
@@ -36,14 +43,14 @@ getLockCachedParseableData lock conn key cacheValue = let
           (Just r) -> return $ Right (ParsedData r)
           Nothing  -> return $ Left "Failed to decode JSON"
 
-cacheIOJsonData :: (ToJSON t) => R.Connection -> String -> IO (Either e t) -> IO (Either e (ParseableCachedData d))
-cacheIOJsonData conn path cacheValue = do
+cacheIOJsonData :: (ToJSON t) => R.Connection -> Int -> String -> IO (Either e t) -> IO (Either e (ParseableCachedData d))
+cacheIOJsonData conn timeout path cacheValue = do
   cacheValue' <- cacheValue
   case cacheValue' of
     (Left e) -> return $ Left e
     (Right v) -> do
       let jsonString = toStrict $ JSON.encode v
-      cacheRedisDataMD5 conn path jsonString
+      cacheRedisDataMD5 conn timeout path jsonString
       return $ Right (RawData jsonString)
 
 getCachedRedisDataMD5 :: R.Connection -> String -> IO (Maybe B.ByteString)
@@ -56,10 +63,10 @@ getCachedRedisDataMD5 conn key = do
       Nothing   -> return Nothing
       (Just v') -> return (Just v')
 
-cacheRedisDataMD5 :: R.Connection -> String -> B.ByteString -> IO ()
-cacheRedisDataMD5 conn key = cacheRedisData conn (B.pack $ md5s (Str key))
+cacheRedisDataMD5 :: R.Connection -> Int -> String -> B.ByteString -> IO ()
+cacheRedisDataMD5 conn timeout key = cacheRedisData conn timeout (B.pack $ md5s (Str key))
 
-cacheRedisData :: R.Connection -> B.ByteString -> B.ByteString -> IO ()
-cacheRedisData conn key data' = do
-  _ <- R.runRedis conn $ R.setOpts key data' (R.SetOpts (Just 60) Nothing Nothing)
+cacheRedisData :: R.Connection -> Int -> B.ByteString -> B.ByteString -> IO ()
+cacheRedisData conn timeout key data' = do
+  _ <- R.runRedis conn $ R.setOpts key data' (R.SetOpts (Just $ fromIntegral timeout) Nothing Nothing)
   return ()

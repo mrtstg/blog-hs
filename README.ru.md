@@ -131,6 +131,7 @@ Blog-hs имеет следующие команды:
 | siteName | SITE_NAME | Короткое описание сайта. Используется в OG и JSON-LD | - |
 | siteHost | SITE_HOST | Основная часть URL. Например, "https://mrtstg.ru". Без слеша в конце, используется для генерации ссылок. | - |
 | robotsFilePath | ROBOTS_TXT_PATH | Путь к файлу robots.txt. | - |
+| redisCacheTime | REDIS_CACHE_TIME | Время в секундах, на которое Redis будет хранить распарсеный пост | 60 |
 
 ## Переключение страниц
 
