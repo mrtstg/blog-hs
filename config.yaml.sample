@@ -1,5 +1,6 @@
 redisHost: "localhost"
 redisPort: 6379
+redisCacheTime: 120
 dbPath: "./db.db"
 blogDepthLimit: 5
 enableIndexPage: true
