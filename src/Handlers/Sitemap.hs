@@ -2,12 +2,13 @@
 {-# LANGUAGE RecordWildCards   #-}
 module Handlers.Sitemap (getSitemapR) where
 
-import           App.Config         (siteHost)
-import           App.Utils          (generatePostUrlFromRelativeFile)
-import           Crud               (selectAllPosts)
-import qualified Data.ByteString    as B
-import           Data.Function      ((&))
-import qualified Data.Text          as T
+import           App.Config              (disabledPages, siteHost)
+import           App.Config.PageSettings
+import           App.Utils               (generatePostUrlFromRelativeFile)
+import           Crud                    (selectAllPosts)
+import qualified Data.ByteString         as B
+import           Data.Function           ((&))
+import qualified Data.Text               as T
 import           Database.Persist
 import           Foundation
 import           Text.XML.Generator
@@ -26,8 +27,10 @@ generateXML posts baseHost = let
 getSitemapR :: Handler TypedContent
 getSitemapR = do
     App { .. } <- getYesod
-    case config & siteHost of
-      Nothing -> notFound
-      (Just host) -> do
-        posts <- runDB selectAllPosts
-        return $ TypedContent "application/xml" (toContent $ generateXML posts host)
+    let (PageSettings disabledPages') = disabledPages config
+    if SitemapPage `elem` disabledPages' then notFound else do
+      case config & siteHost of
+        Nothing -> notFound
+        (Just host) -> do
+          posts <- runDB selectAllPosts
+          return $ TypedContent "application/xml" (toContent $ generateXML posts host)

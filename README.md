@@ -139,6 +139,8 @@ If nececcary, you can disable some pages, like index or category page. In this c
 configuration file. It accepts list of strings, where:
 - `index` is index page option
 - `category`/`categories` is category page option. **Also, it disables link generation on categories on post page**.
+- `robots`/`robots.txt` is robots.txt route.
+- `sitemap`/`sitemap.xml` is sitemap.xml route.
 
 In other case, you can use `ENABLE_INDEX` and `ENABLE_CATEGORIES` environment variables, which accept
 `1` as True or any other value as False.
