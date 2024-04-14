@@ -6,9 +6,11 @@ module Parser.Utils
   , asterisk''
   , codeBlock
   , transliterateCharacter
+  , tableDivider
+  , tableColumn
   ) where
 
-import           Data.Attoparsec.Combinator (many1)
+import           Data.Attoparsec.Combinator (lookAhead, many1)
 import           Data.Attoparsec.Text
 import           Data.Char                  (isLetter)
 
@@ -67,3 +69,9 @@ asterisk'' = count 2 $ char '*'
 
 codeBlock :: Parser String
 codeBlock = count 3 (char '`')
+
+tableDivider :: Parser String
+tableDivider = many1 (choice [char '|', char '-'])
+
+tableColumn :: Parser Char
+tableColumn = char '|' <* space'
