@@ -87,7 +87,7 @@ $doctype 5
     <title> #{pageTitle pc}
     <meta charset=utf-8>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css>
+    <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css>
     $maybe siteName'' <- siteName'
         <meta property=og:site_name content="#{siteName''}">
     ^{pageHead pc}
