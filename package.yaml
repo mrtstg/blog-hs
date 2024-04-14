@@ -36,6 +36,9 @@ dependencies:
 - time == 1.12.2
 - xmlgen == 0.6.2.2
 - http-types == 0.12.3
+- yesod-persistent == 1.6.0.8
+- transformers
+- monad-logger
 
 ghc-options:
 - -Wall

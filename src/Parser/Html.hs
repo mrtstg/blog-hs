@@ -4,10 +4,12 @@ module Parser.Html
   ( markdownToWidget
   ) where
 
-import           Data.ByteString.Char8  (pack, unpack)
+import           Data.ByteString.Char8  (unpack)
 import           Data.Char              (toLower)
 import           Data.List              (intercalate)
 import           Data.Maybe             (isJust)
+import qualified Data.Text              as T
+import           Data.Text.Encoding     (encodeUtf8)
 import           Network.HTTP.Types.URI (urlEncode)
 import           Parser.Inline          (markdownInlinesToPlainText)
 import           Parser.Types
@@ -19,7 +21,8 @@ generateHeaderIdFromContent :: [MarkdownInline] -> Html
 generateHeaderIdFromContent = preEscapedToHtml .
     unpack .
     urlEncode False .
-    pack .
+    encodeUtf8 .
+    T.pack .
     intercalate "-" .
     words .
     concatMap (transliterateCharacter . toLower) .
@@ -76,6 +79,19 @@ blockToWidget (List UnorderedList lst) =
 <ul>
   $forall item <- lst
     <li> ^{markdownInlinesToString item}
+|]
+blockToWidget (Table header content) =
+  [whamlet|
+<table border=1>
+  <thead>
+    <tr>
+      $forall cellInlines <- header
+        <th> ^{markdownInlinesToString cellInlines}
+  <tbody>
+    $forall tableRow <- content
+      <tr>
+        $forall tableCell <- tableRow
+          <td> ^{markdownInlinesToString tableCell}
 |]
 blockToWidget (Code lang code) =
   [whamlet|

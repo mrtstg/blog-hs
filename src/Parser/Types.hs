@@ -42,6 +42,7 @@ data MarkdownBlock
   | Quote [MarkdownInline]
   | List ListType [[MarkdownInline]]
   | Code Language String
+  | Table [[MarkdownInline]] [[[MarkdownInline]]]
   deriving (Eq, Show, Generic)
 
 instance FromJSON MarkdownBlock

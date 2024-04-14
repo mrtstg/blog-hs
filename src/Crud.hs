@@ -9,55 +9,92 @@ module Crud
   isPostsAvailable,
   selectAllPosts,
   createPostPhoto,
-  initiatePosts
+  initiatePosts,
+  getPostCategories,
+  findCategoryByName,
+  isCategoryPostsAvailable,
+  findPostsByCategory
   ) where
 
-import           App.PostInfo            (PostInfo (..))
-import           App.Utils               (normaliseFilePath)
-import           Data.Text               (Text)
+import           App.PostInfo               (PostInfo (..))
+import           App.Utils                  (normaliseFilePath)
+import           Control.Monad              (forM_)
+import           Control.Monad.Trans.Reader
+import qualified Data.Map                   as Map
 import           Database.Persist
 import           Database.Persist.Sqlite
 import           Foundation
-
-type DbPath = Text
+import           Yesod.Core                 (MonadUnliftIO)
 
 pageSize :: Int
 pageSize = 10
 
-findPostByFilename :: DbPath -> String -> IO (Maybe (Entity Post))
-findPostByFilename dbPath fPath =
-  runSqlite dbPath $ do
-    posts <- selectList [PostFile ==. fPath] [LimitTo 1]
-    case posts of
-      []    -> return Nothing
-      (p:_) -> return $ Just p
+isCategoryPostsAvailable :: (MonadUnliftIO m) => Int -> CategoryId -> ReaderT SqlBackend m Bool
+isCategoryPostsAvailable pageNumber cId = do
+  postEntitiesCount <- count [PostCategoryCategory ==. cId]
+  return $ (postEntitiesCount - (pageSize * max 1 pageNumber)) > 0
 
-selectLatestPosts :: DbPath -> Int -> IO [Entity Post]
-selectLatestPosts dbPath pageNumber = runSqlite dbPath $ do selectList [] [Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo 10]
+findPostsByCategory :: (MonadUnliftIO m) => Int -> CategoryId -> ReaderT SqlBackend m [Entity Post]
+findPostsByCategory pageNumber cId = do
+  postEntities <- selectList [PostCategoryCategory ==. cId] []
+  let postIds = map (\(Entity _ (PostCategory pId _)) -> pId) postEntities
+  selectList [PostId <-. postIds] [
+    Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo pageSize
+    ]
 
-selectAllPosts :: DbPath -> IO [Entity Post]
-selectAllPosts dbPath = runSqlite dbPath $ do selectList [] []
+findCategoryByName :: (MonadUnliftIO m) => String -> ReaderT SqlBackend m (Maybe (Entity Category))
+findCategoryByName catName = do
+  res <- selectList [CategoryName ==. catName] [LimitTo 1]
+  case res of
+    []    -> return Nothing
+    (p:_) -> return $ Just p
 
-isPostsAvailable :: DbPath -> Int -> IO Bool
-isPostsAvailable dbPath pageNumber = runSqlite dbPath $ do
+findPostByFilename :: (PersistQueryRead SqlBackend, MonadUnliftIO m) => String -> ReaderT SqlBackend m (Maybe (Entity Post))
+findPostByFilename fPath = do
+  posts <- selectList [PostFile ==. fPath] [LimitTo 1]
+  case posts of
+    []    -> return Nothing
+    (p:_) -> return $ Just p
+
+selectLatestPosts :: (MonadUnliftIO m) => Int -> ReaderT SqlBackend m [Entity Post]
+selectLatestPosts pageNumber = do selectList [] [Desc PostDate, OffsetBy (pageSize * max 0 (pageNumber - 1)), LimitTo pageSize]
+
+selectAllPosts :: (MonadUnliftIO m) => ReaderT SqlBackend m [Entity Post]
+selectAllPosts = selectList [] []
+
+isPostsAvailable :: (MonadUnliftIO m) => Int -> ReaderT SqlBackend m Bool
+isPostsAvailable pageNumber = do
     postsCount <- count ([] :: [Filter Post])
     if postsCount - (pageSize * max 1 pageNumber) > 0 then return True else return False
 
-createPostPhoto :: DbPath -> Entity Post -> String -> IO ()
-createPostPhoto dbPath (Entity pid _) url = do
-    runSqlite dbPath $ do
-        _ <- insert $ PostPhoto url pid
-        return ()
+createPostPhoto :: (MonadUnliftIO m) => Entity Post -> String -> ReaderT SqlBackend m ()
+createPostPhoto (Entity pid _) url = do
+  _ <- insert $ PostPhoto url pid
+  return ()
+
+getPostCategories :: (MonadUnliftIO m) => PostId -> ReaderT SqlBackend m [Category]
+getPostCategories pId = do
+    relatedCategories <- selectList [PostCategoryPost ==. pId] []
+    categoriesInfoMap <- getMany (map (\(Entity _ (PostCategory _ cId)) -> cId) relatedCategories)
+    let categoriesInfo = Map.elems categoriesInfoMap
+    return categoriesInfo
 
 type PostsAmount = Int
-initiatePosts :: DbPath -> [(FilePath, PostInfo)] -> IO PostsAmount
-initiatePosts dbPath = helper 0 where
-    helper :: Int -> [(FilePath, PostInfo)] -> IO PostsAmount
+initiatePosts :: (MonadUnliftIO m) => [(FilePath, PostInfo)] -> ReaderT SqlBackend m PostsAmount
+initiatePosts = helper 0 where
+    helper :: (MonadUnliftIO m) => Int -> [(FilePath, PostInfo)] -> ReaderT SqlBackend m PostsAmount
     helper acc [] = return acc
-    helper acc ((f, PostInfo name' desc dt img):ps) = do
-        runSqlite dbPath $ do
-            postId <- insert $ Post (normaliseFilePath f) name' desc dt
-            case img of
-              Nothing     -> return ()
-              (Just img') -> mapM_ (\x -> insert $ PostPhoto x postId) img'
-        helper (acc + 1) ps
+    helper acc ((f, PostInfo name' desc dt img categories'):ps) = do
+      postId <- insert $ Post (normaliseFilePath f) name' desc dt
+      case img of
+        Nothing     -> return ()
+        (Just img') -> mapM_ (\x -> insert $ PostPhoto x postId) img'
+      forM_ categories' (\c -> do
+          categoryId <- getBy $ UniqueCategory c
+          case categoryId of
+            Nothing    -> return ()
+            (Just (Entity cId _)) -> do
+                _ <- insert $ PostCategory postId cId
+                return ()
+          )
+      helper (acc + 1) ps

@@ -27,6 +27,7 @@ import           Database.Persist.Sqlite
 import           Database.Persist.TH
 import           Database.Redis          (Connection)
 import           Yesod.Core
+import           Yesod.Persist
 
 data App = App
   { postDepthLimit      :: !Int
@@ -41,6 +42,7 @@ mkYesodData
   [parseRoutes|
 / HomeR GET
 /post/*Texts PostR GET
+/category/#Text CategoryR GET
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 |]
@@ -60,6 +62,15 @@ PostPhoto
   post PostId
   UniquePostPhoto post url
   deriving Show
+Category
+  name String
+  displayName String
+  description String
+  UniqueCategory name
+PostCategory
+  post PostId
+  category CategoryId
+  UniquePostCategory post category
 |]
 
 
@@ -111,3 +122,10 @@ $doctype 5
             <h1 .tutle> Error!
             <p .subtitle> Something went wrong. Try later, please!
 |]
+  errorHandler other    = defaultErrorHandler other
+
+instance YesodPersist App where
+  type YesodPersistBackend App = SqlBackend
+  runDB f = do
+    App { dbPath = dbPath } <- getYesod
+    withSqliteConn dbPath $ runSqlConn f

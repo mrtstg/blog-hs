@@ -10,28 +10,31 @@ module App.Commands
   ) where
 
 import           App.Config
-import           App.PostInfo            (PostInfo (..))
+import           App.Config.PostCategoryInfo
 import           App.Types
-import           App.Utils               (checkPostInfoFiles, listDatalessFiles,
-                                          normaliseFilePath, parsePostInfoFiles)
-import qualified Control.Concurrent.Lock as Lock
-import           Control.Monad           (when)
-import           Crud                    (initiatePosts)
-import           Data.Function           ((&))
-import           Data.Text               (pack)
+import           App.Utils                   (checkCategoriesPosts,
+                                              checkPostInfoFiles,
+                                              parsePostInfoFiles)
+import qualified Control.Concurrent.Lock     as Lock
+import           Control.Monad               (when)
+import           Control.Monad.Logger
+import           Crud                        (initiatePosts)
+import           Data.Text                   (pack)
 import           Database.Persist
 import           Database.Persist.Sqlite
-import           Database.Redis          (ConnectInfo (..), PortID (..),
-                                          connect, defaultConnectInfo)
+import           Database.Redis              (ConnectInfo (..), PortID (..),
+                                              connect, defaultConnectInfo)
 import           Foundation
-import           Handlers.Home           (getHomeR)
-import           Handlers.Post           (getPostR)
-import           Handlers.Robots         (getRobotsR)
-import           Handlers.Sitemap        (getSitemapR)
-import           System.Directory        (copyFile, removeFile)
-import           System.Exit             (ExitCode (..), exitWith)
-import           System.FilePath         (addExtension)
+import           Handlers.Home               (getHomeR)
+import           Handlers.Post               (getPostR)
+import           Handlers.PostByCategory     (getCategoryR)
+import           Handlers.Robots             (getRobotsR)
+import           Handlers.Sitemap            (getSitemapR)
+import           System.Directory            (copyFile, removeFile)
+import           System.Exit                 (ExitCode (..), exitWith)
+import           System.FilePath             (addExtension)
 import           Yesod.Core
+import           Yesod.Persist               (YesodPersist (runDB))
 
 mkYesodDispatch "App" resourcesApp
 
@@ -47,14 +50,15 @@ runServerCommand config@(AppConfig { redisHost = redisHost, redisPort = redisPor
   warp port App {..}
 
 runCheckFiles :: AppConfig -> IO ()
-runCheckFiles _ = do
+runCheckFiles AppConfig { postsCategories = categories' } = do
   res <- checkPostInfoFiles "./templates"
-  case res of
-    (Just _) -> putStrLn "Everything is ok!"
-    Nothing  -> exitWith (ExitFailure 3)
+  res2 <- checkCategoriesPosts categories' "./templates"
+  case (res, res2) of
+    (Just _, Just _) -> putStrLn "Everything is ok!"
+    _somethingFailed -> exitWith (ExitFailure 3)
 
 runCreateDatabase :: AppConfig -> IO ()
-runCreateDatabase (AppConfig {dbPath = dbPath}) = do
+runCreateDatabase (AppConfig {dbPath = dbPath, postsCategories = categories}) = do
   filesCheckRes <- checkPostInfoFiles "./templates"
   case filesCheckRes of
     Nothing -> exitWith (ExitFailure 3)
@@ -66,8 +70,12 @@ runCreateDatabase (AppConfig {dbPath = dbPath}) = do
           exitWith (ExitFailure 2)
         (Right lst) -> do
           let tmpDBPath = addExtension dbPath "tmp"
-          runSqlite (pack tmpDBPath) $ runMigration dbMigration
-          posts <- initiatePosts (pack tmpDBPath) lst
+          runSqlite (pack tmpDBPath) $ do
+              runMigration dbMigration
+              _ <- insertMany $ map (\(PostCategoryInfo name displayName desc) -> Category name displayName desc) categories
+              return ()
+          posts <- runNoLoggingT $ withSqliteConn (pack tmpDBPath) $ do
+            runSqlConn (initiatePosts lst)
           putStrLn $ "Created " ++ show posts ++ " posts!"
           copyFile tmpDBPath dbPath
           removeFile tmpDBPath

@@ -1,8 +1,19 @@
 redisHost: "localhost"
 redisPort: 6379
+redisCacheTime: 120
 dbPath: "./db.db"
 blogDepthLimit: 5
 enableIndexPage: true
 siteName: "YOUR NAME personal blog"
 siteHost: "http://localhost:3000"
 robotsFilePath: "./robots.txt"
+
+categories:
+  - name: "bananas-posts"
+    displayName: "Bananas"
+    description: "More posts: /category/bananas-posts"
+
+disabledPages: []
+
+renderSettings:
+  renderDate: true

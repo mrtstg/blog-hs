@@ -1,4 +1,4 @@
-FROM haskell:9.6.3-buster AS builder
+FROM haskell:9.4.7-buster AS builder
 WORKDIR /usr/src/app
 COPY blog-hs.cabal package.yaml stack.yaml stack.yaml.lock ./
 RUN stack setup --install-ghc

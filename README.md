@@ -27,6 +27,7 @@ your server, correct this manually.**
 
 - [ ] Generation of table of contents
 - [ ] Option to disable header's id autogeneration
+- [ ] React on 0 seconds cache time as its disabling
 
 # Table of contents
 
@@ -89,6 +90,13 @@ Post info always stored in .yml (*not .yaml*) file with same name and have follo
 
 Sample file is [example.yml](templates/example.yml).
 
+## Categories
+
+Each post can be attached to different categories using `categories` section. It must contain list of strings, which is
+category names. Using categories, you can group different posts and display then on post category screen.
+
+Posts of current categories can be accessed by URL `/category/<category name>`. It displays 10 posts per page by default.
+
 # Usage
 
 ## Flags
@@ -125,10 +133,52 @@ variables or will use default values.
 | redisPort | REDIS_PORT | Port of redis server | 6379 |
 | dbPath | DB_PATH | Path of SQLite database | ./blog.db |
 | blogDepthLimit | DEPTH_LEVEL | How deep is allowed to go into folders. If request will try to get file deeper than limit, server will response PermissionDenied error. | 1 |
-| enableIndexPage | ENABLE_INDEX | Enable index page. If disabled, server will response not found error. | True (1) |
 | siteName | SITE_NAME | Short description of your website. Used in OG and JSON-LD | - |
 | siteHost | SITE_HOST | Base host of site. For example, "https://mrtstg.ru". No trailing slash at end. Used in generating links. | - |
 | robotsFilePath | ROBOTS_TXT_PATH | Path for robots.txt file. | - |
+| redisCacheTime | REDIS_CACHE_TIME | Time in seconds at what period Redis must store parsed port | 60 |
+
+## Page switches
+
+If nececcary, you can disable some pages, like index or category page. In this case, you should use `disabledPages` option in
+configuration file. It accepts list of strings, where:
+- `index` is index page option
+- `category`/`categories` is category page option. **Also, it disables link generation on categories on post page**.
+- `robots`/`robots.txt` is robots.txt route.
+- `sitemap`/`sitemap.xml` is sitemap.xml route.
+
+In other case, you can use `ENABLE_INDEX` and `ENABLE_CATEGORIES` environment variables, which accept
+`1` as True or any other value as False.
+
+## Categories customization
+
+Configuration file also contains [`categories`](#categories) section. Its consists of objects of following scheme:
+
+```yaml
+name: "category-name-used-in-URL"
+displayName: "Category name, which will be displayed on website"
+description: "Category description"
+```
+
+**Currently, there is no way to customize categories using environment.**
+
+## Render options
+
+By default, web server renders at the top of the page post title, date and categories. This behavior
+can be changed using `renderSettings` section of server config.
+
+This section has fields `renderTitle`, `renderDate` and `renderCategories`,
+which are controlling the behavior. If field is not presented, value is `True` by default.
+
+You can disable rendering OpenGraph and JSON-LD information using field `renderMeta`.
+
+```yaml
+renderSettings:
+  renderDate: false
+  renderTitle: true
+  renderMeta: false
+# renderCategories: true by default
+```
 
 # Deploy
 

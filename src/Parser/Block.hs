@@ -1,11 +1,15 @@
 module Parser.Block
   ( parseBlocks
+  , parseTable
+  , parseTableContent
   ) where
 
 import           Control.Applicative  ((<|>))
 import           Control.Monad        (guard)
 import           Data.Attoparsec.Text
 import           Data.Functor         ((<&>))
+import           Data.String.Utils    (strip)
+import qualified Data.Text            as T
 import           Parser.Inline
 import           Parser.Types
 import           Parser.Utils
@@ -14,7 +18,7 @@ parseBlocks :: Parser [MarkdownBlock]
 parseBlocks = manyTill parseBlock endOfInput
 
 parseBlock :: Parser MarkdownBlock
-parseBlock = choice [try parseHeader, try parseQuote, try parseList, try parseCode, parseParagraph]
+parseBlock = choice [try parseHeader, try parseQuote, try parseList, try parseCode, try parseTable, parseParagraph]
 
 parseOrderedList :: Parser MarkdownBlock
 parseOrderedList = many1 listItem <&> List OrderedList
@@ -31,6 +35,28 @@ parseUnorderedList = many1 listItem <&> List UnorderedList
 
 parseList :: Parser MarkdownBlock
 parseList = parseUnorderedList <|> parseOrderedList
+
+parseTable :: Parser MarkdownBlock
+parseTable = let
+  tableCellsPrep :: String -> T.Text
+  tableCellsPrep = T.pack . strip
+  in do
+  headerStrings <- parseTableContent
+  let header' = mapM (parseOnly parseMarkdownInlines' . tableCellsPrep) headerStrings
+  case header' of
+    (Left e) -> fail $ "Table header: " <> e
+    (Right header) -> do
+      _ <- endOfLine
+      _ <- tableDivider
+      _ <- endOfLine
+      contentStrings <- many1 (parseTableContent <* endOfLine)
+      let content' = mapM (mapM (parseOnly parseMarkdownInlines' . tableCellsPrep)) contentStrings
+      case content' of
+        (Left e)        -> fail $ "Table content: " <> e
+        (Right content) -> return $ Table header content
+
+parseTableContent :: Parser [String]
+parseTableContent = tableColumn *> many1 (satisfy (`notElem` ['\n', '|'])) `sepBy` tableColumn <* tableColumn
 
 parseQuote :: Parser MarkdownBlock
 parseQuote = (char '>' <* skipMany1 (char ' ')) >> (parseMarkdownInlines <&> Quote)
