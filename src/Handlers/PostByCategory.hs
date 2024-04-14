@@ -39,18 +39,30 @@ getCategoryR category = do
         defaultLayout $ do
           setTitle $ toHtml (categoryDisplayName category')
           [whamlet|
-<h1> #{categoryDisplayName category'}
-<p> #{categoryDescription category'}
-$if Prelude.null posts
-  <h1> No posts!
-$else
-  <ul>
+<div .container.py-5>
+  <h1 .title> #{categoryDisplayName category'}
+  <h2 .subtitle.is-5> #{categoryDescription category'}
+  $if Prelude.null posts
+    <article .message.is-danger>
+      <div .message-header>
+        Error!
+      <div .message-body>
+        <p> There is no posts yet!
+  $else
     $forall post <- posts
       $case post
         $of Entity _ post'
-          <li><a href="/post/#{(dropExtensions . postFile) post'}">#{postTitle post'}
-$if pageValue /= 1
-  <a href="/category/#{urlEncodeString encodedCategory}?page=#{pageValue - 1}">Previous page
-$if postsAvailable
-  <a href="/category/#{urlEncodeString encodedCategory}?page=#{pageValue + 1}">Next page
+          <div .box.m-3>
+            <a href="/post/#{(dropExtensions . postFile) post'}">
+              <h3 .title.is-3> #{postTitle post'}
+            <p .subtitle.is-5> #{show $ postDate post'}
+            <div .content>
+              <p> #{postDescriptinon post'}
+    <div .buttons.are-large.is-fullwidth.is-centered.p-5>
+      $if pageValue /= 1
+        <a href=@{CategoryR category}?page=#{pageValue - 1}>
+          <button .button> Previous page
+      $if postsAvailable
+        <a href=@{CategoryR category}?page=#{pageValue + 1}>
+          <button .button> Next page
 |]

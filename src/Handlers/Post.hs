@@ -78,9 +78,11 @@ createCategoryWidget :: Maybe String -> PageSettings -> Category -> WidgetFor Ap
 createCategoryWidget baseHost (PageSettings disabledPages') (Category { categoryName = name, categoryDisplayName = dname })= do
   case (baseHost, CategoryPage `elem` disabledPages') of
     (Just v, False) -> do
-      toWidget [hamlet|<a href=#{v}/category/#{urlEncodeString name}> #{dname}|]
+      toWidget [hamlet|
+<a href=#{v}/category/#{urlEncodeString name}>
+  <span .tag.is-info> #{dname}|]
     _anyOther -> do
-      toWidget [hamlet|#{name} |]
+      toWidget [hamlet|<span .tag.is-info> #{name} |]
 
 getPostR :: [T.Text] -> Handler Html
 getPostR pathParts = do
@@ -120,17 +122,17 @@ getPostR pathParts = do
                 (Right (ParsedData md), Right (ParsedData (PostInfo { name = postName, description = postDescription, date = postDate, images = postImages }))) -> do
                   defaultLayout $ do
                     [whamlet|
-$if postRenderTitle
-  <h1> #{postName}
-$if postRenderDate
-  <i> #{show postDate}
-$if postRenderCategories && (not . null) categoryWidgets
-  <p> Categories:
-    $forall widget <- categoryWidgets
-      ^{widget}
-<section .content>
-
-  ^{markdownToWidget md}
+<div .container>
+  $if postRenderTitle
+    <h1 .title.pt-5> #{postName}
+  $if postRenderDate
+    <h2 .subtitle.is-4> #{show postDate}
+  $if postRenderCategories && (not . null) categoryWidgets
+    <div .tags.are-meduim>
+      $forall widget <- categoryWidgets
+        ^{widget}
+  <div .content.py-5>
+      ^{markdownToWidget md}
                     |]
                     setTitle $ toHtml postName
                     when postRenderMeta $ toWidgetHead [hamlet|
@@ -168,11 +170,5 @@ $maybe siteHost'' <- siteHost'
                 }
             }
         }
-|]
-                    setTitle $ toHtml postName
-                    [whamlet|
-<div .container>
-    <div .content.p-5>
-        ^{markdownToWidget md}
 |]
                 (_, _) -> notFound

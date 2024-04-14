@@ -82,7 +82,7 @@ blockToWidget (List UnorderedList lst) =
 |]
 blockToWidget (Table header content) =
   [whamlet|
-<table border=1>
+<table border=1 .table>
   <thead>
     <tr>
       $forall cellInlines <- header
