@@ -4,6 +4,7 @@ module Parser.Inline
   ( parseMarkdownInlines
   , parseMarkdownInline
   , markdownInlinesToPlainText
+  , parseMarkdownInlines'
   ) where
 
 import           Control.Applicative        ((<|>))
@@ -25,6 +26,20 @@ markdownInlineToPlainText (Bold inlines) = markdownInlinesToPlainText inlines
 
 parseMarkdownInlines :: Parser [MarkdownInline]
 parseMarkdownInlines = manyTill parseMarkdownInline endOfLine
+
+parseMarkdownInlines' :: Parser [MarkdownInline]
+parseMarkdownInlines' = manyTill parseMarkdownInline' endOfInput
+
+-- variant for parsing text to end of input
+parseMarkdownInline' :: Parser MarkdownInline
+parseMarkdownInline' =
+  choice [try parseLink, try parseImage, try parseBold, try parseItalic, parseText']
+
+parseText' :: Parser MarkdownInline
+parseText' = do
+  c <- anyChar
+  cs <- manyTill anyChar $ lookAhead (textStopSyms <|> endOfInput)
+  return $ Text (c : cs)
 
 parseMarkdownInline :: Parser MarkdownInline
 parseMarkdownInline =
