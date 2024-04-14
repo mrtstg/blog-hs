@@ -20,3 +20,10 @@ undefined code moment
 
 > A quoute
 > Another quote!
+
+| Element | Information |
+|---------|-------------|
+| *Table* | A markdown table. Spaces between columns is stripped, can contain **formatted text**, images and links. |
+| Caution | Must have new line at end |
+
+Without newline it wont work!
