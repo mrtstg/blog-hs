@@ -27,7 +27,6 @@ getCategoryR category = do
   App { .. } <- getYesod
   let (PageSettings disabledPages') = disabledPages config
   if CategoryPage `elem` disabledPages' then notFound else do
-    let encodedCategory = urlEncodeString (T.unpack category)
     findRes <- runDB $ findCategoryByName (T.unpack category)
     case findRes of
       Nothing -> notFound
@@ -50,7 +49,7 @@ $else
         $of Entity _ post'
           <li><a href="/post/#{(dropExtensions . postFile) post'}">#{postTitle post'}
 $if pageValue /= 1
-  <a href="/category/#{urlEncodeString encodedCategory}?page=#{pageValue - 1}">Previous page
+  <a href=@{CategoryR category}?page=#{pageValue - 1}">Previous page
 $if postsAvailable
-  <a href="/category/#{urlEncodeString encodedCategory}?page=#{pageValue + 1}">Next page
+  <a href=@{CategoryR category}?page=#{pageValue + 1}">Next page
 |]
