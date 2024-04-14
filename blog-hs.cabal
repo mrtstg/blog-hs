@@ -122,6 +122,7 @@ test-suite blog-hs-test
   main-is: Spec.hs
   other-modules:
       App.UtilsSpec
+      ParserSpec
       Paths_blog_hs
   autogen-modules:
       Paths_blog_hs
