@@ -27,7 +27,6 @@ getCategoryR category = do
   App { .. } <- getYesod
   let (PageSettings disabledPages') = disabledPages config
   if CategoryPage `elem` disabledPages' then notFound else do
-    let encodedCategory = urlEncodeString (T.unpack category)
     findRes <- runDB $ findCategoryByName (T.unpack category)
     case findRes of
       Nothing -> notFound
